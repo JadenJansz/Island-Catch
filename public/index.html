@@ -89,25 +89,34 @@
             var unmute;
             var gameOverText;
             var move = 0;
+            var treeGroup;
+            var tree1,tree2,tree3;
+            var lol =0;
 
             var game = new Phaser.Game(config);
 
             function preload(){
                 this.load.image("frame", "assets/frame_new.png");
-                this.load.image("background", "assets/UI.png");
-                this.load.spritesheet("helicopter", "assets/spritesheet.png",{
-                    frameWidth: 470,
-                    frameHeight: 220
+                this.load.image("background", "assets/Background/Background.png");
+                this.load.spritesheet("helicopter", "assets/Background/Helicopter.png",{
+                    frameWidth: 600,
+                    frameHeight: 320
                 });
+                this.load.image("tree1", "assets/Background/tree1.png")
+                this.load.image("tree2", "assets/Background/tree2.png")
+                this.load.image("tree3", "assets/Background/tree3.png")
+
+                this.load.image("mountains", "assets/Background/Mountains.png")
+                
                 this.load.image("star", "assets/star.png");
-                this.load.image("boat", "assets/boat.png");
-                this.load.image("shark2", "assets/sharkHoriz.png");
+                this.load.image("boat", "assets/Background/boat.png");
+                this.load.image("shark2", "assets/Background/Boat.png");
                 this.load.image('platform', 'assets/platform.png');
                 this.load.image('platformLeft', 'assets/platform.png');
                 this.load.image('platformRight', 'assets/platform.png');
                 this.load.image("man", "assets/man.png");
                 this.load.image("heart", "assets/heart.png");
-                this.load.image("shark1", "assets/sharkHoriz.png");
+                this.load.image("shark1", "assets/Background/Fish.png");
                 this.load.image("button", "assets/uipack_fixed/PNG/green_button00.png")
                 this.load.image("menu", "assets/menu.png");
                 this.load.image("mute", "assets/mute.png");
@@ -138,6 +147,23 @@
                 // background.setOrigin(0, 0);
                 
                 // frame.setOrigin(0, 0);
+                tree2 = this.add.image(1230, 530, "tree2");
+                tree2.setScale(0.4)
+
+                tree3 = this.add.image(720, 500, "tree3");
+                tree3.setScale(0.4)
+
+                tree1 = this.add.image(1050, 500, "tree1");
+                // tree1.setAnchor(10.0, 0.5);
+                console.log(tree1);
+                tree1.setScale(0.5)
+
+                mountains = this.add.image(940, 565, "mountains");
+                mountains.setScale(0.7)
+                
+
+
+
                 
                 this.anims.create({
                     key: "helicopter_anims",
@@ -149,7 +175,7 @@
                     repeat: -1
                 });
 
-                platform = this.physics.add.image(950, 950, 'platform')
+                platform = this.physics.add.image(950, 900, 'platform')
                 platform.scaleX = 2.5
 
                 platformLeft = this.physics.add.staticImage(360, 400, 'platform')
@@ -164,7 +190,8 @@
                 platformRight.scaleY = 10
                 
                 // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
-                helicopter = this.physics.add.sprite(900,370, 'helicopter').setScale(0.35).refreshBody();
+                helicopter = this.physics.add.sprite(900,370, 'helicopter').setScale(0.2).refreshBody();
+                console.log(helicopter);
                 helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
                 helicopter.setCollideWorldBounds(true);
@@ -185,13 +212,13 @@
 
                 // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
 
-                shark2 = this.physics.add.image(750, 780, 'shark1').setScale(0.20).refreshBody();
+                shark2 = this.physics.add.image(750, 780, 'shark1').setScale(0.7).refreshBody();
                 shark2.setVelocityX(velocity);
 
-                boat = this.physics.add.image(950, 805, 'boat').setScale(0.4).setSize(180,40)
+                boat = this.physics.add.image(950, 805, 'boat').setScale(0.3).setSize(180,40)
                 boat.setCollideWorldBounds(true);
                 
-                shark1 = this.physics.add.image(1190, 760, 'shark1').setScale(0.2).refreshBody();
+                shark1 = this.physics.add.image(1190, 760, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
                 
                 
@@ -239,7 +266,21 @@
                 // }).setDepth(1)
 
                 // this.add.filter(100);
-                console.log(this.add)
+
+                var tween = this.tweens.addCounter({
+                    from: 0,
+                    to: 30,
+                    duration: 800,
+                    repeat: -1,
+                    onUpdate: function (tween)
+                    {
+                        //  tween.getValue = range between 0 and 360
+
+                        tree1.setAngle(tween.getValue());
+                    }
+                });
+
+            
             }
             
             function update() {
@@ -252,14 +293,30 @@
                     heart.setVisible(false);
 
                     gameOverText.visible = false;
-                    gameName.visible = true
+                    gameName.visible = false
                     startGameText.visible = true
                     finalScore.visible = false
                     // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
-
+                    
                     gameName.y = 500 + Math.sin(move)*7;
                     gameName.x = 980 + Math.cos((10*0.3) + move)*4;
-                    move += 0.04;
+
+                    // tree1.x = 980 + Math.cos((3*0.8) + move)*0.9;
+                    
+                    
+                    // if(lol < 0.05){
+                    //     console.log("pol")
+                    //     tree1.rotation += 0.001
+                    //     lol += 0.0001
+                    // }
+                    // if(lol > 0.05){
+                    //     console.log("lol")
+                    //     tree1.rotation -= 0.00001
+                    //     lol = 0
+                    // }
+                    
+
+                    move += 0.1;
 
                     if(Phaser.Input.Keyboard.JustDown(enterKey)){
                         startGame = true;

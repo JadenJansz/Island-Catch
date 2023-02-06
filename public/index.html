@@ -9,8 +9,9 @@
         body{
             display: grid;
             justify-items: center;
-            align-self: center  ;
+            align-items: center  ;
             margin: 0;
+            background-color: rgb(115, 147, 179);
         }
         @font-face {
             font-family: CustomFont;
@@ -33,7 +34,7 @@
 
             var config = {
                 type: Phaser.AUTO,
-                backgroundColor: 0x000000,
+                backgroundColor: '#7393B3',
                 pixelArt: true,
                 physics: {
                     default: "arcade",
@@ -51,7 +52,7 @@
                     mode: Phaser.Scale.ENVELOP,
                     autoCenter: Phaser.Scale.CENTER_BOTH,
                     width: 1920,
-                    height: 1080,
+                    height: 990,
                 },
             }
 
@@ -99,7 +100,7 @@
                 this.load.image("frame", "assets/frame_new.png");
                 this.load.image("background", "assets/Background/Background.png");
                 this.load.spritesheet("helicopter", "assets/Background/Helicopter.png",{
-                    frameWidth: 600,
+                    frameWidth: 1000,
                     frameHeight: 320
                 });
                 this.load.image("tree1", "assets/Background/tree1.png")
@@ -133,7 +134,7 @@
             }
 
             function create(){
-                this.physics.world.setBounds(549, 900, 790, 700, true, true, false)
+                this.physics.world.setBounds(241, 1594, 1920, 1980, true, true, false)
                 
                 helicopterSound = this.sound.add("heli");
                 helicopterSound.play({ volume: 0.4, loop: true });
@@ -142,23 +143,26 @@
                 failureSound = this.sound.add("fail")
                 gameOverSound = this.sound.add("gameOver");
                 
-                background = this.add.image(950, 575, "background");
+                background = this.add.image(950, 515, "background");
                 background.setScale(0.65)
                 // background.setOrigin(0, 0);
                 
                 // frame.setOrigin(0, 0);
-                tree2 = this.add.image(1230, 530, "tree2");
+                tree2 = this.add.image(1430, 600, "tree2");
+                tree2.setOrigin(1,1);
                 tree2.setScale(0.4)
 
-                tree3 = this.add.image(720, 500, "tree3");
+                tree3 = this.add.image(860, 590, "tree3");
+                tree3.setOrigin(1,1);
                 tree3.setScale(0.4)
 
-                tree1 = this.add.image(1050, 500, "tree1");
+                tree1 = this.add.image(1170, 600, "tree1");
+                tree1.setOrigin(1,1);
                 // tree1.setAnchor(10.0, 0.5);
                 console.log(tree1);
                 tree1.setScale(0.5)
 
-                mountains = this.add.image(940, 565, "mountains");
+                mountains = this.add.image(940, 505, "mountains");
                 mountains.setScale(0.7)
                 
 
@@ -175,62 +179,62 @@
                     repeat: -1
                 });
 
-                platform = this.physics.add.image(950, 900, 'platform')
+                platform = this.physics.add.image(950, 840, 'platform')
                 platform.scaleX = 2.5
 
-                platformLeft = this.physics.add.staticImage(360, 400, 'platform')
+                platformLeft = this.physics.add.staticImage(240, 340, 'platform')
                 platformLeft.visible = false
                 platformLeft.scaleX = 0
                 platformLeft.scaleY = 10
                 
                 
-                platformRight = this.physics.add.staticImage(1535, 400, 'platform')
+                platformRight = this.physics.add.staticImage(1655, 340, 'platform')
                 platformRight.visible = false
                 platformRight.scaleX = 0
                 platformRight.scaleY = 10
                 
                 // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
-                helicopter = this.physics.add.sprite(900,370, 'helicopter').setScale(0.2).refreshBody();
+                helicopter = this.physics.add.sprite(900,290, 'helicopter').setScale(0.25).refreshBody();
                 console.log(helicopter);
-                helicopter.play("helicopter_anims");
+                // helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
                 helicopter.setCollideWorldBounds(true);
                 helicopter.setBounce(1);
                 this.physics.add.collider(helicopter, platformLeft, flipChopper, null, this)
                 this.physics.add.collider(helicopter, platformRight, flipChopper, null, this)
                 
-                unmute = this.add.image(1300, 305, 'mute').setScale(0.35)
+                unmute = this.add.image(1300, 240, 'mute').setScale(0.35)
                 unmute.inputEnabled = true;
                 unmute.setInteractive();
                 this.input.on('gameobjectdown', muteSound.bind(this));
                 unmute.visible = false;
 
-                mute = this.add.image(1300, 305, 'unmute').setScale(0.35)
+                mute = this.add.image(1300, 240, 'unmute').setScale(0.35)
                 mute.inputEnabled = true;
                 mute.setInteractive();
                 this.input.on('gameobjectdown', muteSound.bind(this));
 
                 // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
 
-                shark2 = this.physics.add.image(750, 780, 'shark1').setScale(0.7).refreshBody();
+                shark2 = this.physics.add.image(750, 720, 'shark1').setScale(0.7).refreshBody();
                 shark2.setVelocityX(velocity);
 
-                boat = this.physics.add.image(950, 805, 'boat').setScale(0.3).setSize(180,40)
+                boat = this.physics.add.image(950, 745, 'boat').setScale(0.25).setSize(400,40)
                 boat.setCollideWorldBounds(true);
                 
-                shark1 = this.physics.add.image(1190, 760, 'shark1').setScale(0.7).refreshBody();
+                shark1 = this.physics.add.image(1190, 700, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
                 
                 
                 heart = this.add.group({
                     key: 'heart',
                     repeat: 2,
-                    setXY: { x: 583, y: 320, stepX: 30 },
+                    setXY: { x: 440, y: 240, stepX: 30 },
                     setScale: { x: 0.08, y: 0.08 }
                 })
                 
-                frame = this.add.image(950, 550, "frame");
-                frame.setScale(1.6).setDepth(1)
+                frame = this.add.image(955, 490, "frame");
+                frame.setScale(1.68).setDepth(1)
 
                 timer = this.time.addEvent({ delay: Math.round(Math.random() * (3500 - 1000) + 1000), callback: createStar, callbackScope: this, loop: true });
                 
@@ -239,15 +243,15 @@
                 
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
-                scoreLabel = this.add.bitmapText(570, 285, "pixelFont", "SCORE : 000000" , 26);
+                scoreLabel = this.add.bitmapText(430, 205, "pixelFont", "SCORE : 000000" , 26);
                 // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
                 // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', font: '65px', fill: '#ffffff' })
                 // gameName.setStroke('black', 5)
-                gameName = this.add.image(970, 500, 'name').setScale(0.35)
-                startGameText = this.add.bitmapText(780, 600, "pixelFont", "Press any key to start", 50)
+                gameName = this.add.image(970, 440, 'name').setScale(0.3)
+                startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
                 // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
-                gameOverText = this.add.image(970, 550, "gameOverImage").setScale(1).setDepth(1);
-                finalScore = this.add.bitmapText(770, 600, "pixelFont", "Final Score : 000000", 60).setDepth(1);
+                gameOverText = this.add.image(970, 490, "gameOverImage").setScale(1).setDepth(1);
+                finalScore = this.add.bitmapText(770, 540, "pixelFont", "Final Score : 000000", 60).setDepth(1);
 
                 this.tweens.add({
                     targets: gameOverText,
@@ -268,18 +272,46 @@
                 // this.add.filter(100);
 
                 var tween = this.tweens.addCounter({
-                    from: 0,
-                    to: 30,
-                    duration: 800,
+                    from: 2,
+                    to: 1,
+                    duration: 1000,
                     repeat: -1,
                     onUpdate: function (tween)
                     {
                         //  tween.getValue = range between 0 and 360
 
                         tree1.setAngle(tween.getValue());
-                    }
+                    },
+                    yoyo: true
                 });
 
+                var tween = this.tweens.addCounter({
+                    from: 0.2,
+                    to: 1.5,
+                    duration: 1000,
+                    repeat: -1,
+                    onUpdate: function (tween)
+                    {
+                        //  tween.getValue = range between 0 and 360
+
+                        tree2.setAngle(tween.getValue());
+                    },
+                    yoyo: true
+                });
+
+                var tween = this.tweens.addCounter({
+                    from: 2,
+                    to: 1,
+                    duration: 1000,
+                    repeat: -1,
+                    onUpdate: function (tween)
+                    {
+                        //  tween.getValue = range between 0 and 360
+
+                        tree3.setAngle(tween.getValue());
+                    },
+                    yoyo: true
+                });
             
             }
             
@@ -293,13 +325,13 @@
                     heart.setVisible(false);
 
                     gameOverText.visible = false;
-                    gameName.visible = false
+                    gameName.visible = true;
                     startGameText.visible = true
                     finalScore.visible = false
                     // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
                     
-                    gameName.y = 500 + Math.sin(move)*7;
-                    gameName.x = 980 + Math.cos((10*0.3) + move)*4;
+                    gameName.y = 500 + Math.sin(move)*2;
+                    gameName.x = 980 + Math.cos((10*0.3) + move)*2;
 
                     // tree1.x = 980 + Math.cos((3*0.8) + move)*0.9;
                     
@@ -316,7 +348,7 @@
                     // }
                     
 
-                    move += 0.1;
+                    move += 0.07;
 
                     if(Phaser.Input.Keyboard.JustDown(enterKey)){
                         startGame = true;
@@ -327,12 +359,24 @@
                     game.loop.resume();
                     this.physics.resume();
 
-                    gameName.visible = false;
+                    // gameName.visible = false;
                     startGameText.visible = false;
                     scoreLabel.visible = true;
                     heart.setVisible(true);
                     
 
+                    var nameTeen = this.tweens.add({
+                        targets: gameName,
+                        scale: 0,
+                        alpha: 0,
+                        duration: 1000,
+                        ease: 'Linear',
+                        repeat: 0,
+                        // onComplete: function(){
+                        //     gameName.alpha = 0.5;
+                        // },
+                        callbackScope: this
+                    })
                     
                     if(fail == 3){
                         gameOverSound.play();

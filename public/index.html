@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Island Madness</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <link rel="preload" as="font" href="assets/font/ARCADECLASSIC.TTF" type="font/ttf" />
+</head>
+    <style>
+        body{
+            display: grid;
+            justify-items: center;
+            align-self: center  ;
+            margin: 0;
+        }
+        @font-face {
+            font-family: CustomFont;
+            src: url('./assets/font/ARCADECLASSIC.TTF');
+        }
+        h1{
+            font-family: CustomFont;
+        }
+        div{
+            font-family: CustomFont;
+        }
+    </style>
+
+    <body class="game">
+        <span style="font-family:CustomFont "></span>
+        <div>
+
+        
+        <script type="text/javascript">
+
+            var config = {
+                type: Phaser.AUTO,
+                backgroundColor: 0x000000,
+                pixelArt: true,
+                physics: {
+                    default: "arcade",
+                    arcade: {
+                        // gravity: { y: 300 },
+                        debug: false
+                    }
+                },
+                scene: {
+                    preload: preload,
+                    create: create,
+                    update: update
+                },
+                scale: {
+                    mode: Phaser.Scale.ENVELOP,
+                    autoCenter: Phaser.Scale.CENTER_BOTH,
+                    width: 1920,
+                    height: 1080,
+                },
+            }
+
+            var background;
+            var helicopter;
+            var boat;
+            var shark;
+            var heart;
+            var cursorKeys;
+            var man;
+            var score = 0;
+            var timer;
+            var scoreText;
+            var scoreLabel;
+            var fail = 0;
+            var life = fail;
+            var shark1;
+            var shark2;
+            var velocity = 40;
+            var helVelocity = -160
+            var  menu;
+            var startGame = false;
+            var playButton;
+            var enterKey;
+            var gameName;
+            var startGameText;
+            var gameOver;
+            var helicopterSound;
+            var successSound;
+            var failureSound;
+            var platformLeft;
+            var platformRight;
+            var finalScore;
+            var mute;
+            var unmute;
+            var gameOverText;
+            var move = 0;
+
+            var game = new Phaser.Game(config);
+
+            function preload(){
+                this.load.image("frame", "assets/frame_new.png");
+                this.load.image("background", "assets/UI.png");
+                this.load.spritesheet("helicopter", "assets/spritesheet.png",{
+                    frameWidth: 470,
+                    frameHeight: 220
+                });
+                this.load.image("star", "assets/star.png");
+                this.load.image("boat", "assets/boat.png");
+                this.load.image("shark2", "assets/sharkHoriz.png");
+                this.load.image('platform', 'assets/platform.png');
+                this.load.image('platformLeft', 'assets/platform.png');
+                this.load.image('platformRight', 'assets/platform.png');
+                this.load.image("man", "assets/man.png");
+                this.load.image("heart", "assets/heart.png");
+                this.load.image("shark1", "assets/sharkHoriz.png");
+                this.load.image("button", "assets/uipack_fixed/PNG/green_button00.png")
+                this.load.image("menu", "assets/menu.png");
+                this.load.image("mute", "assets/mute.png");
+                this.load.image("unmute", "assets/unmute.png");
+                this.load.audio("heli", "assets/helicopter.mp3");
+                this.load.audio("success", "assets/success.mp3");
+                this.load.audio("fail", "assets/fail.wav");
+                this.load.audio("gameOver", "assets/gameOver.mp3");
+                this.load.image("name", "assets/startFont.png")
+                this.load.image("gameOverImage", "assets/gameOver.png")
+                // this.load.spritesheet('helicopter', as)
+
+                this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
+            }
+
+            function create(){
+                this.physics.world.setBounds(549, 900, 790, 700, true, true, false)
+                
+                helicopterSound = this.sound.add("heli");
+                helicopterSound.play({ volume: 0.4, loop: true });
+                
+                successSound = this.sound.add("success");
+                failureSound = this.sound.add("fail")
+                gameOverSound = this.sound.add("gameOver");
+                
+                background = this.add.image(950, 575, "background");
+                background.setScale(0.65)
+                // background.setOrigin(0, 0);
+                
+                // frame.setOrigin(0, 0);
+                
+                this.anims.create({
+                    key: "helicopter_anims",
+                    frames: this.anims.generateFrameNumbers("helicopter", {
+                        start: 0,
+                        end: 3
+                    }),
+                    frameRate: 30,
+                    repeat: -1
+                });
+
+                platform = this.physics.add.image(950, 950, 'platform')
+                platform.scaleX = 2.5
+
+                platformLeft = this.physics.add.staticImage(360, 400, 'platform')
+                platformLeft.visible = false
+                platformLeft.scaleX = 0
+                platformLeft.scaleY = 10
+                
+                
+                platformRight = this.physics.add.staticImage(1535, 400, 'platform')
+                platformRight.visible = false
+                platformRight.scaleX = 0
+                platformRight.scaleY = 10
+                
+                // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
+                helicopter = this.physics.add.sprite(900,370, 'helicopter').setScale(0.35).refreshBody();
+                helicopter.play("helicopter_anims");
+                helicopter.setVelocityX(helVelocity);
+                helicopter.setCollideWorldBounds(true);
+                helicopter.setBounce(1);
+                this.physics.add.collider(helicopter, platformLeft, flipChopper, null, this)
+                this.physics.add.collider(helicopter, platformRight, flipChopper, null, this)
+                
+                unmute = this.add.image(1300, 305, 'mute').setScale(0.35)
+                unmute.inputEnabled = true;
+                unmute.setInteractive();
+                this.input.on('gameobjectdown', muteSound.bind(this));
+                unmute.visible = false;
+
+                mute = this.add.image(1300, 305, 'unmute').setScale(0.35)
+                mute.inputEnabled = true;
+                mute.setInteractive();
+                this.input.on('gameobjectdown', muteSound.bind(this));
+
+                // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
+
+                shark2 = this.physics.add.image(750, 780, 'shark1').setScale(0.20).refreshBody();
+                shark2.setVelocityX(velocity);
+
+                boat = this.physics.add.image(950, 805, 'boat').setScale(0.4).setSize(180,40)
+                boat.setCollideWorldBounds(true);
+                
+                shark1 = this.physics.add.image(1190, 760, 'shark1').setScale(0.2).refreshBody();
+                shark1.setVelocityX(velocity);
+                
+                
+                heart = this.add.group({
+                    key: 'heart',
+                    repeat: 2,
+                    setXY: { x: 583, y: 320, stepX: 30 },
+                    setScale: { x: 0.08, y: 0.08 }
+                })
+                
+                frame = this.add.image(950, 550, "frame");
+                frame.setScale(1.6).setDepth(1)
+
+                timer = this.time.addEvent({ delay: Math.round(Math.random() * (3500 - 1000) + 1000), callback: createStar, callbackScope: this, loop: true });
+                
+                
+                cursorKeys = this.input.keyboard.createCursorKeys();
+                
+                this.score = 0;
+                var scoreFormated = zeroPad(this.score, 6);
+                scoreLabel = this.add.bitmapText(570, 285, "pixelFont", "SCORE : 000000" , 26);
+                // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
+                // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', font: '65px', fill: '#ffffff' })
+                // gameName.setStroke('black', 5)
+                gameName = this.add.image(970, 500, 'name').setScale(0.35)
+                startGameText = this.add.bitmapText(780, 600, "pixelFont", "Press any key to start", 50)
+                // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
+                gameOverText = this.add.image(970, 550, "gameOverImage").setScale(1).setDepth(1);
+                finalScore = this.add.bitmapText(770, 600, "pixelFont", "Final Score : 000000", 60).setDepth(1);
+
+                this.tweens.add({
+                    targets: gameOverText,
+                    alpha: 0,
+                    ease: 'Cubic.In',  
+                    duration: 700,
+                    repeat: -1,
+                    yoyo: true
+                })
+
+                enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
+                // menu = this.add.image(950, 550, 'menu').setScale(1.3).setDepth(1)
+
+                // playButton = this.add.image(950, 600, 'button').setInteractive().on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
+                //     startGame = true;
+                // }).setDepth(1)
+
+                // this.add.filter(100);
+                console.log(this.add)
+            }
+            
+            function update() {
+
+                if(!startGame){
+                    game.loop.sleep();
+                    this.physics.pause();
+                    // this.anims.pauseAll();
+                    scoreLabel.visible = false;
+                    heart.setVisible(false);
+
+                    gameOverText.visible = false;
+                    gameName.visible = true
+                    startGameText.visible = true
+                    finalScore.visible = false
+                    // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
+
+                    gameName.y = 500 + Math.sin(move)*7;
+                    gameName.x = 980 + Math.cos((10*0.3) + move)*4;
+                    move += 0.04;
+
+                    if(Phaser.Input.Keyboard.JustDown(enterKey)){
+                        startGame = true;
+                    }
+                }
+                else if(startGame){
+
+                    game.loop.resume();
+                    this.physics.resume();
+
+                    gameName.visible = false;
+                    startGameText.visible = false;
+                    scoreLabel.visible = true;
+                    heart.setVisible(true);
+                    
+
+                    
+                    if(fail == 3){
+                        gameOverSound.play();
+                        game.loop.sleep();
+                        this.physics.pause();
+                        gameOverText.visible = true;
+                        this.anims.pauseAll();
+                        helicopterSound.pause();
+                        finalScore.visible = true;
+                        scoreLabel.visible = false;
+
+                        return;
+                    }
+                    
+                    moveBoatManager();
+                    
+                    // if(man){
+                    //     // if(star.body.checkWorldBounds()){
+                    //     //     console.log("lol")
+                    //     // }
+                    //     // if(!Phaser.Geom.Intersects.RectangleToRectangle(man.body, this.physics.world.bounds)){
+                    //     //     console.log("ureka")
+                    //     // }
+                        
+                    //     if(man.y > 900){
+                    //         // console.log(this.star.y)
+                    //         fail += 1;
+                    //         man.destroy();
+                    //         // console.log(fail)
+                    //     }
+                    // }
+    
+                    if(shark1.body.x > 1190){
+                        shark1.toggleFlipX();
+                        shark1.setVelocityX(-velocity);
+                    }else if(shark1.body.x <1000){
+                        shark1.toggleFlipX();
+                        shark1.setVelocityX(velocity);
+                    }
+    
+                    if(shark2.body.x > 790){
+                        shark2.toggleFlipX();
+                        shark2.setVelocityX(-velocity);
+                    }else if(shark2.body.x < 600){
+                        shark2.toggleFlipX();
+                        shark2.setVelocityX(velocity);
+                    }
+    
+                    // if(helicopter.body.x < 551){
+                    //     helicopter.toggleFlipX();
+                    // }
+                    // else if(helicopter.body.x > 1175){
+                    //     helicopter.toggleFlipX();
+                    // }
+                    // console.log(helicopter.body.x)
+                    
+                    // if(helicopter.body.checkWorldBounds())
+                    // {   console.log("")
+                    //     helicopter.toggleFlipX();
+                    // }
+    
+                    if(fail != life){
+                        console.log("GAme Over")
+                    }
+                }
+
+                
+
+            }
+
+            function moveBoatManager(){
+
+                boat.setVelocity(0);
+
+                if(this.cursorKeys.left.isDown){
+                    boat.setVelocityX(-450);
+                }
+                else if(this.cursorKeys.right.isDown){
+                    boat.setVelocityX(450)
+                }
+            }
+
+            function flipChopper(helicopter){
+                console.log("lol")
+                helicopter.toggleFlipX();
+            }
+
+            function createStar(){
+                if(startGame){
+                    man = this.physics.add.image(helicopter.x,helicopter.y, 'man').setSize(180,300).setScale(0.17);
+                    man.setGravityY(Math.round(Math.random() * (300 - 10) + 10));
+                    this.physics.add.overlap(man, boat, catchStar, null, this);
+                    this.physics.add.overlap(man, platform, removeLife, null, this);
+
+                }
+            }
+
+            function removeLife(man){
+                fail += 1
+                life = fail
+                // console.log(heart)
+                heart.remove(heart.getLast(true), true);
+                failureSound.play({ volume: 0.7});
+                man.destroy();
+            }
+
+            function catchStar(man){
+                score += 10;
+                var scoreFormated = zeroPad(score, 6);
+                scoreLabel.text = "SCORE : " + scoreFormated;
+                finalScore.text = "Final Score : " + scoreFormated;
+                successSound.play({ volume: 0.4});
+                man.destroy();
+            }
+
+            function zeroPad(number, size){
+                var stringNumber = String(number);
+                while(stringNumber.length < (size || 2)){
+                    stringNumber = "0" + stringNumber;
+                }
+                return stringNumber;
+            }
+
+            function createButton(game, string, x ,y, w, h, callback){
+                console.log(this)
+                var button = this.add.button(x, y, 'button', callback, this, 2, 1, 0);
+                button.anchor.setTo(0.5, 0.5);
+                button.width = 560;
+                button.height = 285;
+
+                var txt = game.add.text(button.x, button.y, 'Hello', {
+                    font: "14px Arial",
+                    fill: "#fff",
+                    align: "center"
+                })
+                txt.anchor.setTo(0.5, 0.5)
+            }
+
+            function muteSound() {
+                if (!game.sound.mute) {
+                    game.sound.mute = true;
+                    unmute.visible = true;
+                    unmute.setDepth(1)
+                } else {
+                    game.sound.mute = false;
+                    unmute.visible = false;
+                    mute.setDepth(1)
+                }
+            }
+
+            function unmuteSound() {
+                mute.visible = true;
+                unmute.visible = false;
+                game.sound.mute = false;
+            }
+        </script>
+        </div>
+    </body>
+</html>

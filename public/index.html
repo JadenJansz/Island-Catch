@@ -47,7 +47,7 @@
                     update: update
                 },
                 scale: {
-                    mode: Phaser.Scale.RESIZE,
+                    mode: Phaser.Scale.ENVELOP,
                     autoCenter: Phaser.Scale.CENTER_BOTH,
                     width: 1920,
                     height: 990,
@@ -92,15 +92,18 @@
             var tree1,tree2,tree3;
             var lol =0;
             var ray;
+            var backgroundMusic;
+            var restart = false;
+            var restartButton;
 
             var game = new Phaser.Game(config);
 
             function preload(){
                 this.load.image("frame", "assets/frame_new.png");
                 this.load.image("background", "assets/Background/Background.png");
-                this.load.spritesheet("helicopter", "assets/Background/Helicopter.png",{
-                    frameWidth: 1000,
-                    frameHeight: 320
+                this.load.spritesheet("helicopter", "assets/Background/spritesheet.png",{
+                    frameWidth: 399,
+                    frameHeight: 150
                 });
                 this.load.image("tree1", "assets/Background/tree1.png")
                 this.load.image("tree2", "assets/Background/tree2.png")
@@ -125,10 +128,12 @@
                 this.load.audio("success", "assets/success.mp3");
                 this.load.audio("fail", "assets/fail.wav");
                 this.load.audio("gameOver", "assets/gameOver.mp3");
+                this.load.audio("music", "assets/Background/beachMusic.mp3");
                 this.load.image("name", "assets/Background/Title.png")
                 this.load.image("gameOverImage", "assets/Background/gameOver.png")
                 this.load.image("startButton", "assets/Background/Button.png")
                 this.load.image("ray", "assets/Background/rays.png")
+                this.load.image("restart", "assets/Background/restart.png")
                 // this.load.spritesheet('helicopter', as)
 
                 this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
@@ -143,6 +148,9 @@
                 successSound = this.sound.add("success");
                 failureSound = this.sound.add("fail")
                 gameOverSound = this.sound.add("gameOver");
+
+                backgroundMusic = this.sound.add("music");
+                backgroundMusic.play({ volume: 0.8, loop: true });
                 
                 background = this.add.image(950, 515, "background");
                 background.setScale(0.65)
@@ -196,9 +204,9 @@
                 platformRight.scaleY = 10
                 
                 // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
-                helicopter = this.physics.add.sprite(1350,290, 'helicopter').setScale(0.25).refreshBody();
+                helicopter = this.physics.add.sprite(1350,290, 'helicopter').setScale(0.5).refreshBody().setInteractive();
                 console.log(helicopter);
-                // helicopter.play("helicopter_anims");
+                helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
                 helicopter.setCollideWorldBounds(true);
                 helicopter.setBounce(1);
@@ -208,13 +216,13 @@
                 unmute = this.add.image(1440, 230, 'mute').setScale(0.35)
                 unmute.inputEnabled = true;
                 unmute.setInteractive();
-                this.input.on('gameobjectdown', muteSound.bind(this));
+                unmute.on('pointerdown', muteSound);
                 unmute.visible = false;
 
                 mute = this.add.image(1440, 230, 'unmute').setScale(0.35)
                 mute.inputEnabled = true;
                 mute.setInteractive();
-                this.input.on('gameobjectdown', muteSound.bind(this));
+                mute.on('pointerdown', muteSound);
 
                 // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
 
@@ -247,31 +255,31 @@
                 
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
-                scoreLabel = this.add.bitmapText(430, 205, "pixelFont", "SCORE : 000000" , 26);
+                scoreLabel = this.add.text(427, 200, "SCORE : 000000" , { fontFamily: 'CustomFont', fontSize: 20, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 });
                 ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
                 // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
                 // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', fontSize: 65 })
                 // gameName.setStroke('black', 5)
-                gameName = this.add.image(970, 600, "name").setScale(0.3)
+                gameName = this.add.image(970, 520, "name").setScale(0.3)
                 // startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
                 // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
                 startGameText = this.add.image(970, 640, "startButton").setScale(0.08).setDepth(1).setInteractive();
                 startGameText.on('pointerdown', function(){ startGame = true });
+
+                restartButton = this.add.image(970, 660, "restart").setScale(0.08).setDepth(1).setAlpha(0).setInteractive();
+                restartButton.on('pointerdown', function() {
+                    console.log(fail)
+                    startGame = false
+                    restart = true
+                });
                 
-                gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1);
+                gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1).setAlpha(0);
                 // finalScore = this.add.bitmapText(770, 570, "pixelFont", "Final Score : 000000", 60).setDepth(1);
-                finalScore = this.add.text(765, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1);
+                finalScore = this.add.text(765, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
                 
 
 
-                this.tweens.add({
-                    targets: gameOverText,
-                    alpha: 0,
-                    ease: 'Cubic.In',  
-                    duration: 700,
-                    repeat: -1,
-                    yoyo: true
-                })
+                
 
 
                 // enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
@@ -328,7 +336,7 @@
 
                 var rayOpacity = this.tweens.add({
                     targets: ray,
-                    alpha: 0.3,
+                    alpha: 0.5,
                     duration: 1000,
                     ease: 'Linear',
                     repeat: -1,
@@ -341,12 +349,18 @@
             
             }
 
-            function restart(){
-                console.log("lol")
-                this.scene.restart();
-            }
+            // function restart(){
+            //     console.log("lol")
+            //     this.scene.restart();
+            // }
             
             function update() {
+
+                if(restart === true){
+                    restart = false;
+                    fail = 0;
+                    this.scene.restart();
+                }
 
                 if(!startGame){
                     game.loop.sleep();
@@ -355,30 +369,16 @@
                     scoreLabel.visible = false;
                     heart.setVisible(false);
 
-                    gameOverText.visible = false;
+                    // gameOverText.visible = false;
                     gameName.visible = true;
                     startGameText.visible = true
-                    finalScore.visible = false
+                    // finalScore.visible = false
                     // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
                     
-                    gameName.y = 500 + Math.sin(move)*2;
+                    gameName.y = 520 + Math.sin(move)*2;
                     gameName.x = 980 + Math.cos((10*0.3) + move)*2;
 
                     // tree1.x = 980 + Math.cos((3*0.8) + move)*0.9;
-                    
-                    
-                    // if(lol < 0.05){
-                    //     console.log("pol")
-                    //     tree1.rotation += 0.001
-                    //     lol += 0.0001
-                    // }
-                    // if(lol > 0.05){
-                    //     console.log("lol")
-                    //     tree1.rotation -= 0.00001
-                    //     lol = 0
-                    // }
-                    
-
                     move += 0.07;
 
                     // if(Phaser.Input.Keyboard.JustDown(enterKey)){
@@ -387,6 +387,7 @@
                 }
                 else if(startGame){
 
+                    backgroundMusic.setVolume(0.3);
                     game.loop.resume();
                     this.physics.resume();
 
@@ -430,6 +431,19 @@
                         helicopterSound.pause();
                         finalScore.visible = true;
                         scoreLabel.visible = false;
+                        restartButton.visible = true;
+
+                        this.tweens.add({
+                            targets: [gameOverText, finalScore, restartButton],
+                            alpha: 1,
+                            ease: 'Linear',
+                            duration: 1000,
+                            });
+
+                        gameOverText.y = 500 + Math.sin(move)*2;
+                        gameOverText.x = 980 + Math.cos((10*0.3) + move)*2;
+
+                        move += 0.07;
 
                         return;
                     }
@@ -480,10 +494,6 @@
                     // {   console.log("")
                     //     helicopter.toggleFlipX();
                     // }
-    
-                    if(fail != life){
-                        console.log("GAme Over")
-                    }
                 }
 
                 
@@ -495,10 +505,10 @@
                 boat.setVelocity(0);
 
                 if(this.cursorKeys.left.isDown){
-                    boat.setVelocityX(-450);
+                    boat.setVelocityX(-470);
                 }
                 else if(this.cursorKeys.right.isDown){
-                    boat.setVelocityX(450)
+                    boat.setVelocityX(470)
                 }
             }
 

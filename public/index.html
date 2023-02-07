@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
     <title>Island Madness</title>
+    <link rel="preload" as="font" href="assets/font/SinglyLinkedRegular-vmoRL.otf" />
     <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
-    <link rel="preload" as="font" href="assets/font/ARCADECLASSIC.TTF" type="font/ttf" />
 </head>
     <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('./assets/font/SinglyLinkedRegular-vmoRL.otf');
+            font-size: larger;
+        }
         body{
             display: grid;
             justify-items: center;
@@ -13,29 +18,22 @@
             margin: 0;
             background-color: rgb(115, 147, 179);
         }
-        @font-face {
-            font-family: CustomFont;
-            src: url('./assets/font/ARCADECLASSIC.TTF');
-        }
-        h1{
-            font-family: CustomFont;
-        }
-        div{
-            font-family: CustomFont;
+        .fontload{
+            visibility:hidden;
+            position: absolute;
+            left: -9999px;
         }
     </style>
 
     <body class="game">
-        <span style="font-family:CustomFont "></span>
-        <div>
-
-        
+        <div class="fontload" style="font-family: 'CustomFont';">.</div>
         <script type="text/javascript">
 
             var config = {
                 type: Phaser.AUTO,
                 backgroundColor: '#7393B3',
                 pixelArt: true,
+                mipmapFilter: 'LINEAR_MIPMAP_LINEAR',
                 physics: {
                     default: "arcade",
                     arcade: {
@@ -49,7 +47,7 @@
                     update: update
                 },
                 scale: {
-                    mode: Phaser.Scale.ENVELOP,
+                    mode: Phaser.Scale.RESIZE,
                     autoCenter: Phaser.Scale.CENTER_BOTH,
                     width: 1920,
                     height: 990,
@@ -93,6 +91,7 @@
             var treeGroup;
             var tree1,tree2,tree3;
             var lol =0;
+            var ray;
 
             var game = new Phaser.Game(config);
 
@@ -110,13 +109,13 @@
                 this.load.image("mountains", "assets/Background/Mountains.png")
                 
                 this.load.image("star", "assets/star.png");
-                this.load.image("boat", "assets/Background/boat.png");
+                this.load.image("boat", "assets/Background/Boat.png");
                 this.load.image("shark2", "assets/Background/Boat.png");
                 this.load.image('platform', 'assets/platform.png');
                 this.load.image('platformLeft', 'assets/platform.png');
                 this.load.image('platformRight', 'assets/platform.png');
                 this.load.image("man", "assets/man.png");
-                this.load.image("heart", "assets/heart.png");
+                this.load.image("heart", "assets/Background/heart.png");
                 this.load.image("shark1", "assets/Background/Fish.png");
                 this.load.image("button", "assets/uipack_fixed/PNG/green_button00.png")
                 this.load.image("menu", "assets/menu.png");
@@ -126,15 +125,17 @@
                 this.load.audio("success", "assets/success.mp3");
                 this.load.audio("fail", "assets/fail.wav");
                 this.load.audio("gameOver", "assets/gameOver.mp3");
-                this.load.image("name", "assets/startFont.png")
-                this.load.image("gameOverImage", "assets/gameOver.png")
+                this.load.image("name", "assets/Background/Title.png")
+                this.load.image("gameOverImage", "assets/Background/gameOver.png")
+                this.load.image("startButton", "assets/Background/Button.png")
+                this.load.image("ray", "assets/Background/rays.png")
                 // this.load.spritesheet('helicopter', as)
 
                 this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
             }
 
             function create(){
-                this.physics.world.setBounds(241, 1594, 1920, 1980, true, true, false)
+                this.physics.world.setBounds(420, 1594, 1050, 1980, true, true, false)
                 
                 helicopterSound = this.sound.add("heli");
                 helicopterSound.play({ volume: 0.4, loop: true });
@@ -150,7 +151,7 @@
                 // frame.setOrigin(0, 0);
                 tree2 = this.add.image(1430, 600, "tree2");
                 tree2.setOrigin(1,1);
-                tree2.setScale(0.4)
+                tree2.scale = .4
 
                 tree3 = this.add.image(860, 590, "tree3");
                 tree3.setOrigin(1,1);
@@ -160,7 +161,7 @@
                 tree1.setOrigin(1,1);
                 // tree1.setAnchor(10.0, 0.5);
                 console.log(tree1);
-                tree1.setScale(0.5)
+                tree1.scale = 0.5
 
                 mountains = this.add.image(940, 505, "mountains");
                 mountains.setScale(0.7)
@@ -179,7 +180,8 @@
                     repeat: -1
                 });
 
-                platform = this.physics.add.image(950, 840, 'platform')
+                platform = this.physics.add.image(950, 890, 'platform')
+                platform.visible = false;
                 platform.scaleX = 2.5
 
                 platformLeft = this.physics.add.staticImage(240, 340, 'platform')
@@ -194,7 +196,7 @@
                 platformRight.scaleY = 10
                 
                 // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
-                helicopter = this.physics.add.sprite(900,290, 'helicopter').setScale(0.25).refreshBody();
+                helicopter = this.physics.add.sprite(1350,290, 'helicopter').setScale(0.25).refreshBody();
                 console.log(helicopter);
                 // helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
@@ -203,23 +205,25 @@
                 this.physics.add.collider(helicopter, platformLeft, flipChopper, null, this)
                 this.physics.add.collider(helicopter, platformRight, flipChopper, null, this)
                 
-                unmute = this.add.image(1300, 240, 'mute').setScale(0.35)
+                unmute = this.add.image(1440, 230, 'mute').setScale(0.35)
                 unmute.inputEnabled = true;
                 unmute.setInteractive();
                 this.input.on('gameobjectdown', muteSound.bind(this));
                 unmute.visible = false;
 
-                mute = this.add.image(1300, 240, 'unmute').setScale(0.35)
+                mute = this.add.image(1440, 230, 'unmute').setScale(0.35)
                 mute.inputEnabled = true;
                 mute.setInteractive();
                 this.input.on('gameobjectdown', muteSound.bind(this));
 
                 // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
 
-                shark2 = this.physics.add.image(750, 720, 'shark1').setScale(0.7).refreshBody();
+                shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.7).refreshBody();
                 shark2.setVelocityX(velocity);
 
-                boat = this.physics.add.image(950, 745, 'boat').setScale(0.25).setSize(400,40)
+                boat = this.physics.add.image(950, 745, 'boat')
+                boat.setScale(0.25)
+                boat.setSize(400,40)
                 boat.setCollideWorldBounds(true);
                 
                 shark1 = this.physics.add.image(1190, 700, 'shark1').setScale(0.7).refreshBody();
@@ -244,14 +248,21 @@
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
                 scoreLabel = this.add.bitmapText(430, 205, "pixelFont", "SCORE : 000000" , 26);
+                ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
                 // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
-                // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', font: '65px', fill: '#ffffff' })
+                // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', fontSize: 65 })
                 // gameName.setStroke('black', 5)
-                gameName = this.add.image(970, 440, 'name').setScale(0.3)
-                startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
+                gameName = this.add.image(970, 600, "name").setScale(0.3)
+                // startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
                 // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
-                gameOverText = this.add.image(970, 490, "gameOverImage").setScale(1).setDepth(1);
-                finalScore = this.add.bitmapText(770, 540, "pixelFont", "Final Score : 000000", 60).setDepth(1);
+                startGameText = this.add.image(970, 640, "startButton").setScale(0.08).setDepth(1).setInteractive();
+                startGameText.on('pointerdown', function(){ startGame = true });
+                
+                gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1);
+                // finalScore = this.add.bitmapText(770, 570, "pixelFont", "Final Score : 000000", 60).setDepth(1);
+                finalScore = this.add.text(765, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1);
+                
+
 
                 this.tweens.add({
                     targets: gameOverText,
@@ -262,7 +273,9 @@
                     yoyo: true
                 })
 
-                enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
+
+                // enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
+                // enterKey = this.input.on('pointerdown', function(){ startGame = true });
                 // menu = this.add.image(950, 550, 'menu').setScale(1.3).setDepth(1)
 
                 // playButton = this.add.image(950, 600, 'button').setInteractive().on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
@@ -272,9 +285,9 @@
                 // this.add.filter(100);
 
                 var tween = this.tweens.addCounter({
-                    from: 2,
+                    from: 3,
                     to: 1,
-                    duration: 1000,
+                    duration: 4000,
                     repeat: -1,
                     onUpdate: function (tween)
                     {
@@ -287,8 +300,8 @@
 
                 var tween = this.tweens.addCounter({
                     from: 0.2,
-                    to: 1.5,
-                    duration: 1000,
+                    to: 2,
+                    duration: 4000,
                     repeat: -1,
                     onUpdate: function (tween)
                     {
@@ -300,9 +313,9 @@
                 });
 
                 var tween = this.tweens.addCounter({
-                    from: 2,
+                    from: 5,
                     to: 1,
-                    duration: 1000,
+                    duration: 4000,
                     repeat: -1,
                     onUpdate: function (tween)
                     {
@@ -312,7 +325,25 @@
                     },
                     yoyo: true
                 });
+
+                var rayOpacity = this.tweens.add({
+                    targets: ray,
+                    alpha: 0.3,
+                    duration: 1000,
+                    ease: 'Linear',
+                    repeat: -1,
+                    // onComplete: function(){
+                    //     gameName.alpha = 0.5;
+                    // },
+                    yoyo: true,
+                    callbackScope: this
+                });
             
+            }
+
+            function restart(){
+                console.log("lol")
+                this.scene.restart();
             }
             
             function update() {
@@ -327,7 +358,7 @@
                     gameOverText.visible = false;
                     gameName.visible = true;
                     startGameText.visible = true
-                    finalScore.visible = false
+                    finalScore.visible = true
                     // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
                     
                     gameName.y = 500 + Math.sin(move)*2;
@@ -350,9 +381,9 @@
 
                     move += 0.07;
 
-                    if(Phaser.Input.Keyboard.JustDown(enterKey)){
-                        startGame = true;
-                    }
+                    // if(Phaser.Input.Keyboard.JustDown(enterKey)){
+                    //     startGame = true;
+                    // }
                 }
                 else if(startGame){
 
@@ -368,6 +399,18 @@
                     var nameTeen = this.tweens.add({
                         targets: gameName,
                         scale: 0,
+                        alpha: 0,
+                        duration: 1000,
+                        ease: 'Linear',
+                        repeat: 0,
+                        // onComplete: function(){
+                        //     gameName.alpha = 0.5;
+                        // },
+                        callbackScope: this
+                    })
+
+                    var rayTeen = this.tweens.add({
+                        targets: ray,
                         alpha: 0,
                         duration: 1000,
                         ease: 'Linear',
@@ -417,10 +460,10 @@
                         shark1.setVelocityX(velocity);
                     }
     
-                    if(shark2.body.x > 790){
-                        shark2.toggleFlipX();
+                    if(shark2.body.x > 850){
+                        shark2.flipX = true;
                         shark2.setVelocityX(-velocity);
-                    }else if(shark2.body.x < 600){
+                    }else if(shark2.body.x < 700){
                         shark2.toggleFlipX();
                         shark2.setVelocityX(velocity);
                     }
@@ -533,6 +576,5 @@
                 game.sound.mute = false;
             }
         </script>
-        </div>
     </body>
 </html>

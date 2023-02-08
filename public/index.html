@@ -32,7 +32,7 @@
             var config = {
                 type: Phaser.AUTO,
                 backgroundColor: '#7393B3',
-                pixelArt: true,
+                pixelArt: false,
                 mipmapFilter: 'LINEAR_MIPMAP_LINEAR',
                 physics: {
                     default: "arcade",
@@ -52,6 +52,10 @@
                     width: 1920,
                     height: 990,
                 },
+                render: {
+                    antialias: true,
+                },
+                roundPixels: true
             }
 
             var background;
@@ -95,6 +99,8 @@
             var backgroundMusic;
             var restart = false;
             var restartButton;
+            var failAnimation = true;
+            var deens;
 
             var game = new Phaser.Game(config);
 
@@ -151,6 +157,21 @@
 
                 backgroundMusic = this.sound.add("music");
                 backgroundMusic.play({ volume: 0.8, loop: true });
+
+                if (!this.sound.locked)
+                {
+                    // already unlocked so play
+                    helicopterSound.play()
+                    backgroundMusic.play()
+                }
+                else
+                {
+                    // wait for 'unlocked' to fire and then play
+                    this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
+                            helicopterSound.play()
+                        backgroundMusic.play()
+                    })
+                }
                 
                 background = this.add.image(950, 515, "background");
                 background.setScale(0.65)
@@ -234,7 +255,7 @@
                 boat.setSize(400,40)
                 boat.setCollideWorldBounds(true);
                 
-                shark1 = this.physics.add.image(1190, 700, 'shark1').setScale(0.7).refreshBody();
+                shark1 = this.physics.add.image(1100, 700, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
                 
                 
@@ -263,24 +284,54 @@
                 gameName = this.add.image(970, 520, "name").setScale(0.3)
                 // startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
                 // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
-                startGameText = this.add.image(970, 640, "startButton").setScale(0.08).setDepth(1).setInteractive();
+                startGameText = this.add.image(970, 640, "startButton").setScale(0.2).setDepth(1).setAlpha(0).setInteractive();
                 startGameText.on('pointerdown', function(){ startGame = true });
 
-                restartButton = this.add.image(970, 660, "restart").setScale(0.08).setDepth(1).setAlpha(0).setInteractive();
+                startGameText.on('pointerover', function(pointer){ startGameText.setScale(0.6) })
+                startGameText.on('pointerout', function(pointer){ startGameText.setScale(0.5) })
+
+                restartButton = this.add.image(970, 650, "restart").setScale(0.08).setDepth(1).setAlpha(0).setInteractive();
                 restartButton.on('pointerdown', function() {
                     console.log(fail)
                     startGame = false
                     restart = true
                 });
+
+                restartButton.on('pointerover', function(pointer){ restartButton.setScale(0.09) })
+                restartButton.on('pointerout', function(pointer){ restartButton.setScale(0.08) })
                 
                 gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1).setAlpha(0);
                 // finalScore = this.add.bitmapText(770, 570, "pixelFont", "Final Score : 000000", 60).setDepth(1);
-                finalScore = this.add.text(765, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
-                
+                finalScore = this.add.text(970, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
+                finalScore.setOrigin(0.5, 0.5);
 
 
-                
+                var gameNameTeen = this.tweens.add({
+                    targets: [gameName],
+                    alpha: { from: 0, to: 1 },
+                    scale: { from: 0, to: 0.3 },
+                    duration: 2000,
+                    ease: 'Back.easeInOut',
+                    repeat: 0,
+                    onComplete: function(){
+                        
+                        this.tweens.add({
+                            targets: [startGameText],
+                            alpha: { from: 0, to: 1 },
+                            scale: { from: 0, to: 0.5 },
+                            duration: 1500,
+                            ease: 'Back.easeInOut',
+                            repeat: 0,
+                            // onComplete: function(){
+                            //     gameName.alpha = 0.5;
+                            // },
+                            callbackScope: this
+                        })
+                    },
+                    callbackScope: this
+                })
 
+                console.log(this);
 
                 // enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
                 // enterKey = this.input.on('pointerdown', function(){ startGame = true });
@@ -346,7 +397,36 @@
                     yoyo: true,
                     callbackScope: this
                 });
-            
+                deens = this.tweens
+
+                this.tweens.add({
+                    targets: shark1,
+                    x: 1230,
+                    ease: 'Linear',
+                    duration: 3000,
+                    flipX: true,
+                    yoyo: true,
+                    repeat: -1
+                });
+
+                this.tweens.add({
+                    targets: shark2,
+                    x: 830,
+                    ease: 'Linear',
+                    duration: 5000,
+                    flipX: true,
+                    yoyo: true,
+                    repeat: -1
+                });
+
+                this.tweens.add({
+                    targets: boat,
+                    y: 740,
+                    ease: 'Quad.easeInOut',
+                    duration: 2000,
+                    yoyo: true,
+                    repeat: -1
+                });
             }
 
             // function restart(){
@@ -357,14 +437,16 @@
             function update() {
 
                 if(restart === true){
+                    backgroundMusic.pause();
                     restart = false;
                     fail = 0;
+                    failAnimation = true;
                     this.scene.restart();
                 }
 
                 if(!startGame){
-                    game.loop.sleep();
-                    this.physics.pause();
+                    // game.loop.sleep();
+                    // this.physics.pause();
                     // this.anims.pauseAll();
                     scoreLabel.visible = false;
                     heart.setVisible(false);
@@ -375,7 +457,7 @@
                     // finalScore.visible = false
                     // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
                     
-                    gameName.y = 520 + Math.sin(move)*2;
+                    gameName.y = 520 + Math.sin(-move)*2;
                     gameName.x = 980 + Math.cos((10*0.3) + move)*2;
 
                     // tree1.x = 980 + Math.cos((3*0.8) + move)*0.9;
@@ -423,30 +505,25 @@
                     })
                     
                     if(fail == 3){
-                        gameOverSound.play();
                         game.loop.sleep();
                         this.physics.pause();
-                        gameOverText.visible = true;
                         this.anims.pauseAll();
                         helicopterSound.pause();
-                        finalScore.visible = true;
+                        // finalScore.visible = true;
                         scoreLabel.visible = false;
-                        restartButton.visible = true;
-
-                        this.tweens.add({
-                            targets: [gameOverText, finalScore, restartButton],
-                            alpha: 1,
-                            ease: 'Linear',
-                            duration: 1000,
-                            });
-
-                        gameOverText.y = 500 + Math.sin(move)*2;
-                        gameOverText.x = 980 + Math.cos((10*0.3) + move)*2;
-
-                        move += 0.07;
-
+                        // restartButton.visible = true;
+                        // failAnimation = true;
+                        startAnimation();
+                        // this.tweens.add({
+                        // targets: [gameOverText, finalScore, restartButton],
+                        // alpha: 1,
+                        // ease: 'Linear',
+                        // duration: 1000,
+                        // callbackScope: this
+                        // });
                         return;
                     }
+
                     
                     moveBoatManager();
                     
@@ -466,21 +543,7 @@
                     //     }
                     // }
     
-                    if(shark1.body.x > 1190){
-                        shark1.toggleFlipX();
-                        shark1.setVelocityX(-velocity);
-                    }else if(shark1.body.x <1000){
-                        shark1.toggleFlipX();
-                        shark1.setVelocityX(velocity);
-                    }
-    
-                    if(shark2.body.x > 850){
-                        shark2.flipX = true;
-                        shark2.setVelocityX(-velocity);
-                    }else if(shark2.body.x < 700){
-                        shark2.toggleFlipX();
-                        shark2.setVelocityX(velocity);
-                    }
+                    
     
                     // if(helicopter.body.x < 551){
                     //     helicopter.toggleFlipX();
@@ -496,8 +559,65 @@
                     // }
                 }
 
-                
+                    // if(shark1.body.x > 1190){
+                    //     shark1.toggleFlipX();
+                    //     shark1.setVelocityX(-velocity);
+                    // }if(shark1.body.x <1000){
+                    //     shark1.toggleFlipX();
+                    //     shark1.setVelocityX(velocity);
+                    // }
+    
+                    // if(shark2.body.x > 850){
+                    //     shark2.flipX = true;
+                    //     shark2.setVelocityX(-velocity);
+                    // }else if(shark2.body.x < 700){
+                    //     shark2.toggleFlipX();
+                    //     shark2.setVelocityX(velocity);
+                    // }
 
+            }
+
+            function startAnimation(){
+                if(failAnimation === true){
+                    failAnimation = false;
+                    var iol = deens.add({
+                        targets: [gameOverText],
+                        alpha: 1,
+                        scale: { from: 0, to: 0.2 },
+                        ease: 'Back.easeInOut',
+                        duration: 1000,
+                        callbackScope: this,
+                        onComplete: function(){
+                            // gameOverText.y = 490 + Math.sin(move)*2;
+                            // gameOverText.x = 970 + Math.cos((10*0.3) + move)*2;
+        
+                            // move += 0.07;
+                            
+                            deens.add({
+                            targets: [finalScore],
+                            alpha: { from: 0, to: 1 },
+                            scale: { from: 0, to: 1 },
+                            ease: 'Back.easeInOut',
+                            duration: 1000,
+                            callbackScope: this,
+                            onComplete: function(){
+                                deens.add({
+                                targets: [restartButton],
+                                scale: { from: 0, to: 0.08 },
+                                alpha: { from: 0, to: 1 },
+                                ease: 'Back.easeInOut',
+                                duration: 1000,
+                                callbackScope: this,
+                                })
+                            }
+                            })
+                    
+                        }
+
+                        
+                    });
+
+                }
             }
 
             function moveBoatManager(){

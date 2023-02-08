@@ -16,7 +16,7 @@
             justify-items: center;
             align-items: center  ;
             margin: 0;
-            background-color: rgb(115, 147, 179);
+            background-color: rgb(0, 0, 0);
         }
         .fontload{
             visibility:hidden;
@@ -30,8 +30,8 @@
         <script type="text/javascript">
 
             var config = {
-                type: Phaser.AUTO,
-                backgroundColor: '#7393B3',
+                type: Phaser.WEBGL,
+                backgroundColor: '#000000',
                 pixelArt: false,
                 mipmapFilter: 'LINEAR_MIPMAP_LINEAR',
                 physics: {
@@ -54,8 +54,9 @@
                 },
                 render: {
                     antialias: true,
+                    roundPixels: true,
                 },
-                roundPixels: true
+                resolution: 3
             }
 
             var background;
@@ -73,7 +74,7 @@
             var life = fail;
             var shark1;
             var shark2;
-            var velocity = 40;
+            var velocity = 30;
             var helVelocity = -160
             var  menu;
             var startGame = false;
@@ -101,6 +102,7 @@
             var restartButton;
             var failAnimation = true;
             var deens;
+            var splash;
 
             var game = new Phaser.Game(config);
 
@@ -111,6 +113,10 @@
                     frameWidth: 399,
                     frameHeight: 150
                 });
+                this.load.spritesheet("splash", "assets/Background/splash.png",{
+                    frameWidth: 200,
+                    frameHeight: 170
+                })
                 this.load.image("tree1", "assets/Background/tree1.png")
                 this.load.image("tree2", "assets/Background/tree2.png")
                 this.load.image("tree3", "assets/Background/tree3.png")
@@ -189,7 +195,6 @@
                 tree1 = this.add.image(1170, 600, "tree1");
                 tree1.setOrigin(1,1);
                 // tree1.setAnchor(10.0, 0.5);
-                console.log(tree1);
                 tree1.scale = 0.5
 
                 mountains = this.add.image(940, 505, "mountains");
@@ -209,6 +214,19 @@
                     repeat: -1
                 });
 
+                this.anims.create({
+                    key: 'splash_anims',
+                    frames: this.anims.generateFrameNumbers("splash", {
+                        start: 0,
+                        end: 9
+                    }),
+                    frameRate: 5,
+                    repeat: 0,
+                    hideOnComplete: true
+                })
+
+                
+
                 platform = this.physics.add.image(950, 890, 'platform')
                 platform.visible = false;
                 platform.scaleX = 2.5
@@ -225,8 +243,7 @@
                 platformRight.scaleY = 10
                 
                 // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
-                helicopter = this.physics.add.sprite(1350,290, 'helicopter').setScale(0.5).refreshBody().setInteractive();
-                console.log(helicopter);
+                helicopter = this.physics.add.sprite(1350,300, 'helicopter').setScale(0.5).refreshBody().setInteractive();
                 helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
                 helicopter.setCollideWorldBounds(true);
@@ -234,20 +251,20 @@
                 this.physics.add.collider(helicopter, platformLeft, flipChopper, null, this)
                 this.physics.add.collider(helicopter, platformRight, flipChopper, null, this)
                 
-                unmute = this.add.image(1440, 230, 'mute').setScale(0.35)
+                unmute = this.add.image(1450, 240, 'mute').setScale(0.35)
                 unmute.inputEnabled = true;
                 unmute.setInteractive();
                 unmute.on('pointerdown', muteSound);
                 unmute.visible = false;
 
-                mute = this.add.image(1440, 230, 'unmute').setScale(0.35)
+                mute = this.add.image(1450, 240, 'unmute').setScale(0.35)
                 mute.inputEnabled = true;
                 mute.setInteractive();
                 mute.on('pointerdown', muteSound);
 
                 // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
 
-                shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.7).refreshBody();
+                shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.6).refreshBody();
                 shark2.setVelocityX(velocity);
 
                 boat = this.physics.add.image(950, 745, 'boat')
@@ -257,26 +274,33 @@
                 
                 shark1 = this.physics.add.image(1100, 700, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
+
+                shark3 = this.physics.add.image(1400, 770, 'shark1').setScale(0.7).refreshBody();
+                shark3.flipX = true;
+                shark3.setVelocityX(-velocity);
+
+                shark4 = this.physics.add.image(500, 770, 'shark1').setScale(0.7).refreshBody();
+                shark4.setVelocityX(velocity);
                 
                 
                 heart = this.add.group({
                     key: 'heart',
                     repeat: 2,
-                    setXY: { x: 440, y: 240, stepX: 30 },
+                    setXY: { x: 440, y: 250, stepX: 30 },
                     setScale: { x: 0.08, y: 0.08 }
                 })
                 
                 frame = this.add.image(955, 490, "frame");
                 frame.setScale(1.68).setDepth(1)
 
-                timer = this.time.addEvent({ delay: Math.round(Math.random() * (3500 - 1000) + 1000), callback: createStar, callbackScope: this, loop: true });
+                timer = this.time.addEvent({ delay: Math.round(Math.random() * (4500 - 2000) + 2000), callback: createStar, callbackScope: this, loop: true });
                 
                 
                 cursorKeys = this.input.keyboard.createCursorKeys();
                 
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
-                scoreLabel = this.add.text(427, 200, "SCORE : 000000" , { fontFamily: 'CustomFont', fontSize: 20, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 });
+                scoreLabel = this.add.text(427, 210, "SCORE : 000000" , { fontFamily: 'CustomFont', fontSize: 20, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 });
                 ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
                 // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
                 // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', fontSize: 65 })
@@ -290,15 +314,15 @@
                 startGameText.on('pointerover', function(pointer){ startGameText.setScale(0.6) })
                 startGameText.on('pointerout', function(pointer){ startGameText.setScale(0.5) })
 
-                restartButton = this.add.image(970, 650, "restart").setScale(0.08).setDepth(1).setAlpha(0).setInteractive();
+                restartButton = this.add.image(970, 640, "restart").setScale(0.08).setDepth(1).setAlpha(0).setInteractive();
                 restartButton.on('pointerdown', function() {
                     console.log(fail)
                     startGame = false
                     restart = true
                 });
 
-                restartButton.on('pointerover', function(pointer){ restartButton.setScale(0.09) })
-                restartButton.on('pointerout', function(pointer){ restartButton.setScale(0.08) })
+                restartButton.on('pointerover', function(pointer){ restartButton.setScale(0.6) })
+                restartButton.on('pointerout', function(pointer){ restartButton.setScale(0.5) })
                 
                 gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1).setAlpha(0);
                 // finalScore = this.add.bitmapText(770, 570, "pixelFont", "Final Score : 000000", 60).setDepth(1);
@@ -331,7 +355,7 @@
                     callbackScope: this
                 })
 
-                console.log(this);
+                console.log(game);
 
                 // enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
                 // enterKey = this.input.on('pointerdown', function(){ startGame = true });
@@ -412,6 +436,26 @@
                 this.tweens.add({
                     targets: shark2,
                     x: 830,
+                    ease: 'Linear',
+                    duration: 5000,
+                    flipX: true,
+                    yoyo: true,
+                    repeat: -1
+                });
+
+                this.tweens.add({
+                    targets: shark3,
+                    x: 1200,
+                    ease: 'Linear',
+                    duration: 7000,
+                    flipX: true,
+                    yoyo: true,
+                    repeat: -1
+                });
+
+                this.tweens.add({
+                    targets: shark4,
+                    x: 850,
                     ease: 'Linear',
                     duration: 5000,
                     flipX: true,
@@ -603,7 +647,7 @@
                             onComplete: function(){
                                 deens.add({
                                 targets: [restartButton],
-                                scale: { from: 0, to: 0.08 },
+                                scale: { from: 0, to: 0.5 },
                                 alpha: { from: 0, to: 1 },
                                 ease: 'Back.easeInOut',
                                 duration: 1000,
@@ -653,6 +697,8 @@
                 // console.log(heart)
                 heart.remove(heart.getLast(true), true);
                 failureSound.play({ volume: 0.7});
+                // splash = this.physics.add.sprite(man.x,man.y - 115, 'splash')
+                // splash.play("splash_anims")
                 man.destroy();
             }
 

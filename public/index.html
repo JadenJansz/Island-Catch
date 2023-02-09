@@ -103,12 +103,16 @@
             var failAnimation = true;
             var deens;
             var splash;
+            var bird, bird1, bird2;
+            var sky;
 
             var game = new Phaser.Game(config);
 
             function preload(){
                 this.load.image("frame", "assets/frame_new.png");
                 this.load.image("background", "assets/Background/Background.png");
+                this.load.image("sky", "assets/Background/sky.png");
+                this.load.image("land", "assets/Background/land.png");
                 this.load.spritesheet("helicopter", "assets/Background/spritesheet.png",{
                     frameWidth: 399,
                     frameHeight: 150
@@ -116,6 +120,10 @@
                 this.load.spritesheet("splash", "assets/Background/splash.png",{
                     frameWidth: 200,
                     frameHeight: 170
+                })
+                this.load.spritesheet("bird", "assets/Background/bird.png",{
+                    frameWidth: 190,
+                    frameHeight: 135
                 })
                 this.load.image("tree1", "assets/Background/tree1.png")
                 this.load.image("tree2", "assets/Background/tree2.png")
@@ -132,14 +140,15 @@
                 this.load.image("man", "assets/man.png");
                 this.load.image("heart", "assets/Background/heart.png");
                 this.load.image("shark1", "assets/Background/Fish.png");
-                this.load.image("button", "assets/uipack_fixed/PNG/green_button00.png")
                 this.load.image("menu", "assets/menu.png");
                 this.load.image("mute", "assets/mute.png");
                 this.load.image("unmute", "assets/unmute.png");
                 this.load.audio("heli", "assets/helicopter.mp3");
                 this.load.audio("success", "assets/success.mp3");
                 this.load.audio("fail", "assets/fail.wav");
-                this.load.audio("gameOver", "assets/gameOver.mp3");
+                this.load.audio("fail", "assets/fail.wav");
+                this.load.audio("splashSound", "assets/Background/splashSound.mp3")
+                // this.load.audio("gameOver", "assets/gameOver.mp3");
                 this.load.audio("music", "assets/Background/beachMusic.mp3");
                 this.load.image("name", "assets/Background/Title.png")
                 this.load.image("gameOverImage", "assets/Background/gameOver.png")
@@ -158,8 +167,8 @@
                 helicopterSound.play({ volume: 0.4, loop: true });
                 
                 successSound = this.sound.add("success");
-                failureSound = this.sound.add("fail")
-                gameOverSound = this.sound.add("gameOver");
+                failureSound = this.sound.add("splashSound")
+                // gameOverSound = this.sound.add("gameOver");
 
                 backgroundMusic = this.sound.add("music");
                 backgroundMusic.play({ volume: 0.8, loop: true });
@@ -179,9 +188,29 @@
                     })
                 }
                 
-                background = this.add.image(950, 515, "background");
-                background.setScale(0.65)
+                // background = this.add.image(950, 515, "background");
+                // background.setScale(0.65)
+
+                // sky = this.add.image(950,410, "sky");
+                sky = this.add.tileSprite(950,450, 2012, 812, 'sky')
+                sky.setScale(0.65);
+
+                land = this.add.image(950, 520, 'land');
+                land.setScale(0.65)
                 // background.setOrigin(0, 0);
+
+                this.anims.create({
+                    key: 'bird_anims',
+                    frames: this.anims.generateFrameNumbers("bird", {
+                        start: 0,
+                        end: 8
+                    }),
+                    frameRate: 11,
+                    repeat: -1,
+                })
+
+                bird2 = this.physics.add.sprite(100,Math.round(Math.random() * (300 - 270) + 270), "bird").setScale(0.1)
+                bird2.play("bird_anims")
                 
                 // frame.setOrigin(0, 0);
                 tree2 = this.add.image(1430, 600, "tree2");
@@ -218,16 +247,18 @@
                     key: 'splash_anims',
                     frames: this.anims.generateFrameNumbers("splash", {
                         start: 0,
-                        end: 9
+                        end: 5
                     }),
-                    frameRate: 5,
+                    frameRate: 9,
                     repeat: 0,
                     hideOnComplete: true
                 })
 
                 
 
-                platform = this.physics.add.image(950, 890, 'platform')
+                
+
+                platform = this.physics.add.image(950, 790, 'platform')
                 platform.visible = false;
                 platform.scaleX = 2.5
 
@@ -250,6 +281,14 @@
                 helicopter.setBounce(1);
                 this.physics.add.collider(helicopter, platformLeft, flipChopper, null, this)
                 this.physics.add.collider(helicopter, platformRight, flipChopper, null, this)
+
+                bird = this.physics.add.sprite(350,Math.round(Math.random() * (500 - 370) + 370), "bird").setScale(0.15)
+                bird.play("bird_anims")
+
+                bird1 = this.physics.add.sprite(150,Math.round(Math.random() * (500 - 370) + 370), "bird").setScale(0.1)
+                bird1.play("bird_anims")
+
+                
                 
                 unmute = this.add.image(1450, 240, 'mute').setScale(0.35)
                 unmute.inputEnabled = true;
@@ -301,7 +340,7 @@
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
                 scoreLabel = this.add.text(427, 210, "SCORE : 000000" , { fontFamily: 'CustomFont', fontSize: 20, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 });
-                ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
+                // ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
                 // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
                 // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', fontSize: 65 })
                 // gameName.setStroke('black', 5)
@@ -355,12 +394,6 @@
                     callbackScope: this
                 })
 
-                console.log(game);
-
-                // enterKey = this.input.keyboard.on('keydown', function(){ startGame = true });
-                // enterKey = this.input.on('pointerdown', function(){ startGame = true });
-                // menu = this.add.image(950, 550, 'menu').setScale(1.3).setDepth(1)
-
                 // playButton = this.add.image(950, 600, 'button').setInteractive().on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
                 //     startGame = true;
                 // }).setDepth(1)
@@ -374,7 +407,6 @@
                     repeat: -1,
                     onUpdate: function (tween)
                     {
-                        //  tween.getValue = range between 0 and 360
 
                         tree1.setAngle(tween.getValue());
                     },
@@ -388,7 +420,6 @@
                     repeat: -1,
                     onUpdate: function (tween)
                     {
-                        //  tween.getValue = range between 0 and 360
 
                         tree2.setAngle(tween.getValue());
                     },
@@ -402,25 +433,24 @@
                     repeat: -1,
                     onUpdate: function (tween)
                     {
-                        //  tween.getValue = range between 0 and 360
 
                         tree3.setAngle(tween.getValue());
                     },
                     yoyo: true
                 });
 
-                var rayOpacity = this.tweens.add({
-                    targets: ray,
-                    alpha: 0.5,
-                    duration: 1000,
-                    ease: 'Linear',
-                    repeat: -1,
-                    // onComplete: function(){
-                    //     gameName.alpha = 0.5;
-                    // },
-                    yoyo: true,
-                    callbackScope: this
-                });
+                // var rayOpacity = this.tweens.add({
+                //     targets: ray,
+                //     alpha: 0.5,
+                //     duration: 1000,
+                //     ease: 'Linear',
+                //     repeat: -1,
+                //     // onComplete: function(){
+                //     //     gameName.alpha = 0.5;
+                //     // },
+                //     yoyo: true,
+                //     callbackScope: this
+                // });
                 deens = this.tweens
 
                 this.tweens.add({
@@ -466,10 +496,43 @@
                 this.tweens.add({
                     targets: boat,
                     y: 740,
-                    ease: 'Quad.easeInOut',
-                    duration: 2000,
+                    ease: 'Linear',
+                    duration: 1500,
                     yoyo: true,
                     repeat: -1
+                });
+
+                this.tweens.add({
+                    targets: bird,
+                    x: 1800,
+                    ease: 'Linear',
+                    duration: 10000,
+                    repeat: -1,
+                    onRepeat: function(){
+                        bird.y = Math.round(Math.random() * (500 - 370) + 370)
+                    }
+                });
+
+                this.tweens.add({
+                    targets: bird1,
+                    x: 1800,
+                    ease: 'Linear',
+                    duration: 9000,
+                    repeat: -1,
+                    onRepeat: function(){
+                        bird1.y = Math.round(Math.random() * (500 - 370) + 370)
+                    }
+                });
+
+                this.tweens.add({
+                    targets: bird2,
+                    x: 1800,
+                    ease: 'Linear',
+                    duration: 11000,
+                    repeat: -1,
+                    onRepeat: function(){
+                        bird2.y = Math.round(Math.random() * (300 - 270) + 270)
+                    }
                 });
             }
 
@@ -479,6 +542,8 @@
             // }
             
             function update() {
+                lol += 0.005
+                sky.tilePositionX -= 0.2
 
                 if(restart === true){
                     backgroundMusic.pause();
@@ -489,22 +554,14 @@
                 }
 
                 if(!startGame){
-                    // game.loop.sleep();
-                    // this.physics.pause();
-                    // this.anims.pauseAll();
                     scoreLabel.visible = false;
                     heart.setVisible(false);
 
-                    // gameOverText.visible = false;
                     gameName.visible = true;
                     startGameText.visible = true
-                    // finalScore.visible = false
-                    // gameName.setTint(0xffffff, 0x000000, 0x000000, 0xffffff);
                     
                     gameName.y = 520 + Math.sin(-move)*2;
                     gameName.x = 980 + Math.cos((10*0.3) + move)*2;
-
-                    // tree1.x = 980 + Math.cos((3*0.8) + move)*0.9;
                     move += 0.07;
 
                     // if(Phaser.Input.Keyboard.JustDown(enterKey)){
@@ -517,7 +574,6 @@
                     game.loop.resume();
                     this.physics.resume();
 
-                    // gameName.visible = false;
                     startGameText.visible = false;
                     scoreLabel.visible = true;
                     heart.setVisible(true);
@@ -536,88 +592,34 @@
                         callbackScope: this
                     })
 
-                    var rayTeen = this.tweens.add({
-                        targets: ray,
-                        alpha: 0,
-                        duration: 1000,
-                        ease: 'Linear',
-                        repeat: 0,
-                        // onComplete: function(){
-                        //     gameName.alpha = 0.5;
-                        // },
-                        callbackScope: this
-                    })
+                    // var rayTeen = this.tweens.add({
+                    //     targets: ray,
+                    //     alpha: 0,
+                    //     duration: 1000,
+                    //     ease: 'Linear',
+                    //     repeat: 0,
+                    //     // onComplete: function(){
+                    //     //     gameName.alpha = 0.5;
+                    //     // },
+                    //     callbackScope: this
+                    // })
                     
                     if(fail == 3){
                         game.loop.sleep();
                         this.physics.pause();
-                        this.anims.pauseAll();
+                        // this.anims.pauseAll();
                         helicopterSound.pause();
                         // finalScore.visible = true;
                         scoreLabel.visible = false;
                         // restartButton.visible = true;
                         // failAnimation = true;
                         startAnimation();
-                        // this.tweens.add({
-                        // targets: [gameOverText, finalScore, restartButton],
-                        // alpha: 1,
-                        // ease: 'Linear',
-                        // duration: 1000,
-                        // callbackScope: this
-                        // });
                         return;
                     }
 
                     
                     moveBoatManager();
-                    
-                    // if(man){
-                    //     // if(star.body.checkWorldBounds()){
-                    //     //     console.log("lol")
-                    //     // }
-                    //     // if(!Phaser.Geom.Intersects.RectangleToRectangle(man.body, this.physics.world.bounds)){
-                    //     //     console.log("ureka")
-                    //     // }
-                        
-                    //     if(man.y > 900){
-                    //         // console.log(this.star.y)
-                    //         fail += 1;
-                    //         man.destroy();
-                    //         // console.log(fail)
-                    //     }
-                    // }
-    
-                    
-    
-                    // if(helicopter.body.x < 551){
-                    //     helicopter.toggleFlipX();
-                    // }
-                    // else if(helicopter.body.x > 1175){
-                    //     helicopter.toggleFlipX();
-                    // }
-                    // console.log(helicopter.body.x)
-                    
-                    // if(helicopter.body.checkWorldBounds())
-                    // {   console.log("")
-                    //     helicopter.toggleFlipX();
-                    // }
                 }
-
-                    // if(shark1.body.x > 1190){
-                    //     shark1.toggleFlipX();
-                    //     shark1.setVelocityX(-velocity);
-                    // }if(shark1.body.x <1000){
-                    //     shark1.toggleFlipX();
-                    //     shark1.setVelocityX(velocity);
-                    // }
-    
-                    // if(shark2.body.x > 850){
-                    //     shark2.flipX = true;
-                    //     shark2.setVelocityX(-velocity);
-                    // }else if(shark2.body.x < 700){
-                    //     shark2.toggleFlipX();
-                    //     shark2.setVelocityX(velocity);
-                    // }
 
             }
 
@@ -632,10 +634,6 @@
                         duration: 1000,
                         callbackScope: this,
                         onComplete: function(){
-                            // gameOverText.y = 490 + Math.sin(move)*2;
-                            // gameOverText.x = 970 + Math.cos((10*0.3) + move)*2;
-        
-                            // move += 0.07;
                             
                             deens.add({
                             targets: [finalScore],
@@ -696,9 +694,9 @@
                 life = fail
                 // console.log(heart)
                 heart.remove(heart.getLast(true), true);
-                failureSound.play({ volume: 0.7});
-                // splash = this.physics.add.sprite(man.x,man.y - 115, 'splash')
-                // splash.play("splash_anims")
+                failureSound.play({ volume: 0.3});
+                splash = this.physics.add.sprite(man.x - 10,man.y, 'splash').setScale(0.6)
+                splash.play("splash_anims")
                 man.destroy();
             }
 

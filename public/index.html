@@ -306,7 +306,7 @@
                 shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.6).refreshBody();
                 shark2.setVelocityX(velocity);
 
-                boat = this.physics.add.image(950, 745, 'boat')
+                boat = this.physics.add.image(950, 765, 'boat')
                 boat.setScale(0.25)
                 boat.setSize(400,40)
                 boat.setCollideWorldBounds(true);
@@ -495,9 +495,9 @@
 
                 this.tweens.add({
                     targets: boat,
-                    y: 740,
-                    ease: 'Linear',
-                    duration: 1500,
+                    y: 760,
+                    ease: 'Sine.easeInOut',
+                    duration: 1000,
                     yoyo: true,
                     repeat: -1
                 });
@@ -681,8 +681,22 @@
 
             function createStar(){
                 if(startGame){
-                    man = this.physics.add.image(helicopter.x,helicopter.y, 'man').setSize(180,300).setScale(0.17);
-                    man.setGravityY(Math.round(Math.random() * (300 - 10) + 10));
+                    man = this.physics.add.image(helicopter.x,helicopter.y, 'man').setOrigin(0,0.5).setSize(180,300).setScale(0.17);
+                    man.setGravityY(Math.round(Math.random() * (100 - 20) + 20));
+
+                    var tween = deens.addCounter({
+                    from: -3,
+                    to: 3,
+                    duration: 700,
+                    repeat: -1,
+                    onUpdate: function (tween)
+                    {
+
+                        man.setAngle(tween.getValue());
+                    },
+                    yoyo: true
+                });
+
                     this.physics.add.overlap(man, boat, catchStar, null, this);
                     this.physics.add.overlap(man, platform, removeLife, null, this);
 

@@ -105,6 +105,9 @@
             var splash;
             var bird, bird1, bird2;
             var sky;
+            var tol;
+            var waves;
+            var waves1;
 
             var game = new Phaser.Game(config);
 
@@ -124,6 +127,10 @@
                 this.load.spritesheet("bird", "assets/Background/bird.png",{
                     frameWidth: 190,
                     frameHeight: 135
+                })
+                this.load.spritesheet("boatS", "assets/Background/waves.png",{
+                    frameWidth: 1600,
+                    frameHeight: 235
                 })
                 this.load.image("tree1", "assets/Background/tree1.png")
                 this.load.image("tree2", "assets/Background/tree2.png")
@@ -155,6 +162,8 @@
                 this.load.image("startButton", "assets/Background/Button.png")
                 this.load.image("ray", "assets/Background/rays.png")
                 this.load.image("restart", "assets/Background/restart.png")
+                this.load.image("bigWave", "assets/Background/3.png")
+                this.load.image("mediumWave", "assets/Background/2.png")
                 // this.load.spritesheet('helicopter', as)
 
                 this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
@@ -254,7 +263,15 @@
                     hideOnComplete: true
                 })
 
-                
+                // this.anims.create({
+                //     key: 'waves_anims',
+                //     frames: this.anims.generateFrameNumbers("boatS", {
+                //         start: 2,
+                //         end: 2
+                //     }),
+                //     frameRate: 5,
+                //     repeat: -1,
+                // })
 
                 
 
@@ -306,10 +323,13 @@
                 shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.6).refreshBody();
                 shark2.setVelocityX(velocity);
 
-                boat = this.physics.add.image(950, 765, 'boat')
-                boat.setScale(0.25)
+                boat = this.physics.add.image(950, 745, 'boat')
+                boat.setScale(0.55)
                 boat.setSize(400,40)
                 boat.setCollideWorldBounds(true);
+
+                // waves = this.physics.add.sprite(950, 770, 'boatS').setScale(0.15)
+                
                 
                 shark1 = this.physics.add.image(1100, 700, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
@@ -368,6 +388,7 @@
                 finalScore = this.add.text(970, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
                 finalScore.setOrigin(0.5, 0.5);
 
+                tol = this
 
                 var gameNameTeen = this.tweens.add({
                     targets: [gameName],
@@ -495,7 +516,7 @@
 
                 this.tweens.add({
                     targets: boat,
-                    y: 760,
+                    y: 750,
                     ease: 'Sine.easeInOut',
                     duration: 1000,
                     yoyo: true,
@@ -614,6 +635,7 @@
                         // restartButton.visible = true;
                         // failAnimation = true;
                         startAnimation();
+                        man.destroy();
                         return;
                     }
 
@@ -665,12 +687,42 @@
             function moveBoatManager(){
 
                 boat.setVelocity(0);
-
+                
                 if(this.cursorKeys.left.isDown){
                     boat.setVelocityX(-470);
+                    // waves.play("waves_anims")
+
+                    waves = tol.add.image(boat.x+20, boat.y+5, 'bigWave').setScale(0.1).setAlpha(0)
+                    waves1 = tol.add.image(boat.x+8, boat.y+12, 'mediumWave').setScale(0.1)
+                    waves1.flipX = true;
+                    var i =0.01
+                    var iol = deens.add({
+                        targets: [waves1],
+                        ease: 'Sine.easeInOut',
+                        duration: 150,
+                        callbackScope: this,
+                        props: {
+                            alpha: { value: { from: 0.5, to: 0 }, duration: 300, ease: 'Linear' }
+                        }
+                    });
+
                 }
                 else if(this.cursorKeys.right.isDown){
                     boat.setVelocityX(470)
+
+                    waves = tol.add.image(boat.x+20, boat.y+5, 'bigWave').setScale(0.1).setAlpha(0)
+                    waves1 = tol.add.image(boat.x+8, boat.y+12, 'mediumWave').setScale(0.1)
+                    waves1.flipX = true;
+                    var i =0.01
+                    var iol = deens.add({
+                        targets: [waves1],
+                        ease: 'Sine.easeInOut',
+                        duration: 150,
+                        callbackScope: this,
+                        props: {
+                            alpha: { value: { from: 0.5, to: 0 }, duration: 300, ease: 'Linear' }
+                        }
+                    });
                 }
             }
 
@@ -683,19 +735,35 @@
                 if(startGame){
                     man = this.physics.add.image(helicopter.x,helicopter.y, 'man').setOrigin(0,0.5).setSize(180,300).setScale(0.17);
                     man.setGravityY(Math.round(Math.random() * (100 - 20) + 20));
+                    man.setOrigin(0.5,0)
 
-                    var tween = deens.addCounter({
-                    from: -3,
-                    to: 3,
-                    duration: 700,
-                    repeat: -1,
-                    onUpdate: function (tween)
-                    {
+                    var timeline = deens.createTimeline();
 
-                        man.setAngle(tween.getValue());
-                    },
-                    yoyo: true
-                });
+                    timeline.add({
+                        targets: man,
+                        angle: { from: 0, to: 5 },
+                        duration: 1000,
+                    });
+
+                    timeline.add({
+                        targets: man,
+                        angle: { from: 5, to: -10 },
+                        duration: 1500,
+                    });
+
+                    timeline.add({
+                        targets: man,
+                        angle: { from: -10, to: 15 },
+                        duration: 2000,
+                    });
+
+                    timeline.add({
+                        targets: man,
+                        angle: { from: 15, to: -20 },
+                        duration: 3000,
+                    });
+
+                    timeline.play();
 
                     this.physics.add.overlap(man, boat, catchStar, null, this);
                     this.physics.add.overlap(man, platform, removeLife, null, this);
@@ -709,7 +777,7 @@
                 // console.log(heart)
                 heart.remove(heart.getLast(true), true);
                 failureSound.play({ volume: 0.3});
-                splash = this.physics.add.sprite(man.x - 10,man.y, 'splash').setScale(0.6)
+                splash = this.physics.add.sprite(man.x - 15,man.y + 50, 'splash').setScale(0.6)
                 splash.play("splash_anims")
                 man.destroy();
             }

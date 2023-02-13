@@ -93,24 +93,26 @@
             var move = 0;
             var treeGroup;
             var tree1,tree2,tree3;
-            var lol =0;
             var ray;
             var backgroundMusic;
             var restart = false;
             var restartButton;
             var failAnimation = true;
-            var deens;
+            var tweensVariable;
             var splash;
             var bird, bird1, bird2;
             var sky;
-            var tol;
+            var sceneVariable;
             var waves;
             var waves1;
             var boatLeft;
             var boatRight;
+            var count = true;
 
+            //Create configuration of the game
             var game = new Phaser.Game(config);
 
+            //Preloader of the game
             function preload(){
                 var progressBar = this.add.graphics();
                 var progressBox = this.add.graphics();
@@ -154,7 +156,9 @@
                 assetText.setOrigin(0.5, 0.5);
 
                 this.load.on('progress', function (value) {
-                    percentText.setText(parseInt(value * 100) + '%');
+                    if(count){
+                        percentText.text = (parseInt(value*100) + '%');
+                    }
                     progressBox.x = 560
                     progressBox.y = 195
                     progressBar.x = 560
@@ -168,6 +172,7 @@
                     // assetText.setText('Loading asset: ' + file.key);
                 });
                 this.load.on('complete', function () {
+                    count = false
                     progressBar.destroy();
                     progressBox.destroy();
                     loadingText.destroy();
@@ -237,6 +242,7 @@
                 this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
             }
 
+            //Create the scenes and display assets
             function create(){
                 this.physics.world.setBounds(420, 1594, 1050, 1980, true, true, false)
                 
@@ -422,7 +428,7 @@
                 frame = this.add.image(955, 490, "frame");
                 frame.setScale(1.68).setDepth(1)
 
-                timer = this.time.addEvent({ delay: Math.round(Math.random() * (4500 - 2000) + 2000), callback: createStar, callbackScope: this, loop: true });
+                timer = this.time.addEvent({ delay: Math.round(Math.random() * (4500 - 2000) + 2000), callback: createMan, callbackScope: this, loop: true });
                 
                 
                 cursorKeys = this.input.keyboard.createCursorKeys();
@@ -452,7 +458,7 @@
                 finalScore = this.add.text(970, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
                 finalScore.setOrigin(0.5, 0.5);
 
-                tol = this
+                sceneVariable = this
 
                 var gameNameTeen = this.tweens.add({
                     targets: [gameName],
@@ -518,7 +524,7 @@
                     yoyo: true
                 });
 
-                deens = this.tweens
+                tweensVariable = this.tweens
 
                 this.tweens.add({
                     targets: shark1,
@@ -596,7 +602,6 @@
             
             function update() {
                 
-                lol += 0.005
                 sky.tilePositionX -= 0.2
 
                 if(restart === true){
@@ -680,7 +685,7 @@
             function startAnimation(){
                 if(failAnimation === true){
                     failAnimation = false;
-                    var iol = deens.add({
+                    var iol = tweensVariable.add({
                         targets: [gameOverText],
                         alpha: 1,
                         scale: { from: 0, to: 0.2 },
@@ -689,7 +694,7 @@
                         callbackScope: this,
                         onComplete: function(){
                             
-                            deens.add({
+                            tweensVariable.add({
                             targets: [finalScore],
                             alpha: { from: 0, to: 1 },
                             scale: { from: 0, to: 1 },
@@ -697,7 +702,7 @@
                             duration: 1000,
                             callbackScope: this,
                             onComplete: function(){
-                                deens.add({
+                                tweensVariable.add({
                                 targets: [restartButton],
                                 scale: { from: 0, to: 0.5 },
                                 alpha: { from: 0, to: 1 },
@@ -727,10 +732,9 @@
                     boatRight.setVelocityX(-470);
                     boatLeft.setVelocityX(-470);
                     
-                    waves1 = tol.add.image(boatRight.x+8, boatRight.y+33, 'mediumWave').setScale(0.1).setDepth(1)
+                    waves1 = sceneVariable.add.image(boatRight.x+8, boatRight.y+33, 'mediumWave').setScale(0.1).setDepth(1)
                     waves1.flipX = true;
-                    var i =0.01
-                    var iol = deens.add({
+                    var iol = tweensVariable.add({
                         targets: [waves1],
                         ease: 'Sine.easeInOut',
                         duration: 150,
@@ -747,11 +751,10 @@
                     boatLeft.setVelocityX(470)
                     boatRight.setVelocityX(470);
                     
-                    waves = tol.add.image(boatLeft.x+20, boatLeft.y+5, 'bigWave').setScale(0.1).setAlpha(0)
-                    waves1 = tol.add.image(boatLeft.x+8, boatLeft.y+33, 'mediumWave').setScale(0.1).setDepth(1)
+                    waves = sceneVariable.add.image(boatLeft.x+20, boatLeft.y+5, 'bigWave').setScale(0.1).setAlpha(0)
+                    waves1 = sceneVariable.add.image(boatLeft.x+8, boatLeft.y+33, 'mediumWave').setScale(0.1).setDepth(1)
                     waves1.flipX = true;
-                    var i =0.01
-                    var iol = deens.add({
+                    var iol = tweensVariable.add({
                         targets: [waves1],
                         ease: 'Sine.easeInOut',
                         duration: 150,
@@ -764,17 +767,16 @@
             }
 
             function flipChopper(helicopter){
-                console.log("lol")
                 helicopter.toggleFlipX();
             }
 
-            function createStar(){
+            function createMan(){
                 if(startGame){
                     man = this.physics.add.image(helicopter.x,helicopter.y, 'man').setOrigin(0,0.5).setSize(180,300).setScale(0.17);
                     man.setGravityY(Math.round(Math.random() * (100 - 20) + 20));
                     man.setOrigin(0.5,0)
 
-                    var timeline = deens.createTimeline();
+                    var timeline = tweensVariable.createTimeline();
 
                     timeline.add({
                         targets: man,
@@ -805,7 +807,7 @@
 
                     timeline.play();
 
-                    this.physics.add.overlap(man, boatLeft, catchStar, null, this);
+                    this.physics.add.overlap(man, boatLeft, catchMan, null, this);
                     this.physics.add.overlap(man, platform, removeLife, null, this);
 
                 }
@@ -821,7 +823,7 @@
                 man.destroy();
             }
 
-            function catchStar(man){
+            function catchMan(man){
                 score += 10;
                 var scoreFormated = zeroPad(score, 6);
                 scoreLabel.text = "SCORE : " + scoreFormated;
@@ -829,7 +831,7 @@
                 successSound.play({ volume: 0.4});
                 var sparkles = this.add.sprite(boatLeft.x,boatLeft.y , 'sparkles').setScale(0.1).setDepth(1)
 
-                var iol = deens.add({
+                var iol = tweensVariable.add({
                     targets: [sparkles],
                     ease: 'Sine.easeInOut',
                     duration: 1000,

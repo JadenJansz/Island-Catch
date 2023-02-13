@@ -37,7 +37,6 @@
                 physics: {
                     default: "arcade",
                     arcade: {
-                        // gravity: { y: 300 },
                         debug: false
                     }
                 },
@@ -113,6 +112,69 @@
             var game = new Phaser.Game(config);
 
             function preload(){
+                var progressBar = this.add.graphics();
+                var progressBox = this.add.graphics();
+                progressBox.fillStyle(0x222222, 0.8);
+                progressBox.fillRect(240, 270, 320, 50);
+                
+                var width = this.cameras.main.width;
+                var height = this.cameras.main.height;
+
+                var loadingText = this.make.text({
+                    x: width / 2,
+                    y: height / 2 - 60,
+                    text: 'Loading...',
+                    style: {
+                        font: '20px monospace',
+                        fill: '#ffffff'
+                    }
+                });
+                loadingText.setOrigin(0.5, 0.5);
+                
+                var percentText = this.make.text({
+                    x: width / 2,
+                    y: height / 2 - 5,
+                    text: '0%',
+                    style: {
+                        font: '18px monospace',
+                        fill: '#ffffff'
+                    }
+                });
+                percentText.setOrigin(0.5, 0.5);
+
+                var assetText = this.make.text({
+                x: width / 2,
+                y: height / 2 + 50,
+                text: '',
+                style: {
+                    font: '18px monospace',
+                    fill: '#ffffff'
+                }
+                });
+                assetText.setOrigin(0.5, 0.5);
+
+                this.load.on('progress', function (value) {
+                    percentText.setText(parseInt(value * 100) + '%');
+                    progressBox.x = 560
+                    progressBox.y = 195
+                    progressBar.x = 560
+                    progressBar.y = 195
+                    progressBar.clear();
+                    progressBar.fillStyle(0xffffff, 1);
+                    progressBar.fillRect(250, 280, 300 * value, 30);
+                });
+                
+                this.load.on('fileprogress', function (file) {
+                    // assetText.setText('Loading asset: ' + file.key);
+                });
+                this.load.on('complete', function () {
+                    progressBar.destroy();
+                    progressBox.destroy();
+                    loadingText.destroy();
+                    percentText.destroy();
+                    assetText.destroy();
+                });
+
                 this.load.image("frame", "assets/frame_new.png");
                 this.load.image("background", "assets/Background.png");
                 this.load.image("sky", "assets/sky.png");
@@ -162,7 +224,6 @@
                 this.load.audio("fail", "assets/fail.wav");
                 this.load.audio("fail", "assets/fail.wav");
                 this.load.audio("splashSound", "assets/splashSound.mp3")
-                // this.load.audio("gameOver", "assets/gameOver.mp3");
                 this.load.audio("music", "assets/beachMusic.mp3");
                 this.load.image("name", "assets/Title.png")
                 this.load.image("gameOverImage", "assets/gameOver.png")
@@ -184,36 +245,28 @@
                 
                 successSound = this.sound.add("success");
                 failureSound = this.sound.add("splashSound")
-                // gameOverSound = this.sound.add("gameOver");
 
                 backgroundMusic = this.sound.add("music");
                 backgroundMusic.play({ volume: 0.8, loop: true });
 
                 if (!this.sound.locked)
                 {
-                    // already unlocked so play
                     helicopterSound.play()
                     backgroundMusic.play()
                 }
                 else
                 {
-                    // wait for 'unlocked' to fire and then play
                     this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
                             helicopterSound.play()
                         backgroundMusic.play()
                     })
                 }
                 
-                // background = this.add.image(950, 515, "background");
-                // background.setScale(0.65)
-
-                // sky = this.add.image(950,410, "sky");
                 sky = this.add.tileSprite(950,450, 2012, 812, 'sky')
                 sky.setScale(0.65);
 
                 land = this.add.image(950, 520, 'land');
                 land.setScale(0.65)
-                // background.setOrigin(0, 0);
 
                 this.anims.create({
                     key: 'bird_anims',
@@ -228,7 +281,6 @@
                 bird2 = this.physics.add.sprite(100,Math.round(Math.random() * (300 - 270) + 270), "bird").setScale(0.1)
                 bird2.play("bird_anims")
                 
-                // frame.setOrigin(0, 0);
                 tree2 = this.add.image(1430, 600, "tree2");
                 tree2.setOrigin(1,1);
                 tree2.scale = .4
@@ -239,7 +291,6 @@
 
                 tree1 = this.add.image(1170, 600, "tree1");
                 tree1.setOrigin(1,1);
-                // tree1.setAnchor(10.0, 0.5);
                 tree1.scale = 0.5
 
                 mountains = this.add.image(940, 505, "mountains");
@@ -290,18 +341,6 @@
                     repeat: -1,
                 })
 
-                // this.anims.create({
-                //     key: 'waves_anims',
-                //     frames: this.anims.generateFrameNumbers("boatS", {
-                //         start: 2,
-                //         end: 2
-                //     }),
-                //     frameRate: 5,
-                //     repeat: -1,
-                // })
-
-                
-
                 platform = this.physics.add.image(950, 790, 'platform')
                 platform.visible = false;
                 platform.scaleX = 2.5
@@ -317,7 +356,6 @@
                 platformRight.scaleX = 0
                 platformRight.scaleY = 10
                 
-                // this.helicopter = this.add.image(130,100, 'helicopter').setScale(0.5);
                 helicopter = this.physics.add.sprite(1350,300, 'helicopter').setScale(0.5).refreshBody().setInteractive();
                 helicopter.play("helicopter_anims");
                 helicopter.setVelocityX(helVelocity);
@@ -345,8 +383,6 @@
                 mute.setInteractive();
                 mute.on('pointerdown', muteSound);
 
-                // unmute = this.add.image(1310, 310, 'unmute').setScale(0.09)
-
                 shark2 = this.physics.add.image(770, 715, 'shark1').setScale(0.6).refreshBody();
                 shark2.setVelocityX(velocity);
 
@@ -364,9 +400,6 @@
                 boatRight.setCollideWorldBounds(true);
                 boatLeft.visible = false
                 boatRight.play("boat_anims_right")
-
-                // waves = this.physics.add.sprite(950, 770, 'boatS').setScale(0.15)
-                
                 
                 shark1 = this.physics.add.image(1100, 700, 'shark1').setScale(0.7).refreshBody();
                 shark1.setVelocityX(velocity);
@@ -397,13 +430,8 @@
                 this.score = 0;
                 var scoreFormated = zeroPad(this.score, 6);
                 scoreLabel = this.add.text(427, 210, "SCORE : 000000" , { fontFamily: 'CustomFont', fontSize: 20, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 });
-                // ray = this.add.image(970, 500, "ray").setScale(0.7).setAlpha(0.15)
-                // gameName = this.add.bitmapText(730, 300, "pixelFont", "Island-Madness", 90)
-                // gameName = this.add.text(690, 500, "Island-Madness", { fontFamily: 'CustomFont', fontSize: 65 })
-                // gameName.setStroke('black', 5)
                 gameName = this.add.image(970, 520, "name").setScale(0.3)
-                // startGameText = this.add.bitmapText(780, 580, "pixelFont", "Press any key to start", 50)
-                // gameOver = this.add.bitmapText(820, 540, "pixelFont", "GAME OVER!" , 85).setDepth(1);
+
                 startGameText = this.add.image(970, 640, "startButton").setScale(0.2).setDepth(1).setAlpha(0).setInteractive();
                 startGameText.on('pointerdown', function(){ startGame = true });
 
@@ -421,7 +449,6 @@
                 restartButton.on('pointerout', function(pointer){ restartButton.setScale(0.5) })
                 
                 gameOverText = this.add.image(970, 490, "gameOverImage").setScale(0.25).setDepth(1).setAlpha(0);
-                // finalScore = this.add.bitmapText(770, 570, "pixelFont", "Final Score : 000000", 60).setDepth(1);
                 finalScore = this.add.text(970, 570, "Final Score : 000000", { fontFamily: 'CustomFont', fontSize: 45, fill: '#eef0f3',stroke: '#000000', strokeThickness: 3 }).setDepth(1).setAlpha(0).setInteractive();
                 finalScore.setOrigin(0.5, 0.5);
 
@@ -451,12 +478,6 @@
                     },
                     callbackScope: this
                 })
-
-                // playButton = this.add.image(950, 600, 'button').setInteractive().on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, () => {
-                //     startGame = true;
-                // }).setDepth(1)
-
-                // this.add.filter(100);
 
                 var tween = this.tweens.addCounter({
                     from: 3,
@@ -497,18 +518,6 @@
                     yoyo: true
                 });
 
-                // var rayOpacity = this.tweens.add({
-                //     targets: ray,
-                //     alpha: 0.5,
-                //     duration: 1000,
-                //     ease: 'Linear',
-                //     repeat: -1,
-                //     // onComplete: function(){
-                //     //     gameName.alpha = 0.5;
-                //     // },
-                //     yoyo: true,
-                //     callbackScope: this
-                // });
                 deens = this.tweens
 
                 this.tweens.add({
@@ -551,15 +560,6 @@
                     repeat: -1
                 });
 
-                // this.tweens.add({
-                //     targets: boat,
-                //     y: 500,
-                //     ease: 'Sine.easeInOut',
-                //     duration: 1000,
-                //     yoyo: true,
-                //     repeat: -1
-                // });
-
                 this.tweens.add({
                     targets: bird,
                     x: 1800,
@@ -593,11 +593,6 @@
                     }
                 });
             }
-
-            // function restart(){
-            //     console.log("lol")
-            //     this.scene.restart();
-            // }
             
             function update() {
                 
@@ -624,10 +619,6 @@
                     gameName.y = 520 + Math.sin(-move)*2;
                     gameName.x = 980 + Math.cos((10*0.3) + move)*2;
                     move += 0.07;
-
-                    // if(Phaser.Input.Keyboard.JustDown(enterKey)){
-                    //     startGame = true;
-                    // }
                 }
                 else if(startGame){
 
@@ -653,28 +644,12 @@
                         // },
                         callbackScope: this
                     })
-
-                    // var rayTeen = this.tweens.add({
-                    //     targets: ray,
-                    //     alpha: 0,
-                    //     duration: 1000,
-                    //     ease: 'Linear',
-                    //     repeat: 0,
-                    //     // onComplete: function(){
-                    //     //     gameName.alpha = 0.5;
-                    //     // },
-                    //     callbackScope: this
-                    // })
                     
                     if(fail == 3){
                         game.loop.sleep();
                         this.physics.pause();
-                        // this.anims.pauseAll();
                         helicopterSound.pause();
-                        // finalScore.visible = true;
                         scoreLabel.visible = false;
-                        // restartButton.visible = true;
-                        // failAnimation = true;
                         startAnimation();
                         man.destroy();
                         return;
@@ -752,9 +727,6 @@
                     boatRight.setVelocityX(-470);
                     boatLeft.setVelocityX(-470);
                     
-                    
-
-                    // // waves = tol.add.image(boatRight.x+20, boatRight.y+5, 'bigWave').setScale(0.1).setAlpha(0)
                     waves1 = tol.add.image(boatRight.x+8, boatRight.y+33, 'mediumWave').setScale(0.1).setDepth(1)
                     waves1.flipX = true;
                     var i =0.01
@@ -842,7 +814,6 @@
             function removeLife(man){
                 fail += 1
                 life = fail
-                // console.log(heart)
                 heart.remove(heart.getLast(true), true);
                 failureSound.play({ volume: 0.3});
                 splash = this.physics.add.sprite(man.x - 15,man.y + 70, 'splash').setScale(0.6)
